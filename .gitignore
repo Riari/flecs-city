@@ -3,5 +3,6 @@ _deps/**
 **/CMakeFiles/**
 
 # Build output
+.cache/**
 build/**
 compile_commands.json
