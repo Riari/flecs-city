@@ -1,16 +1,7 @@
 # CMake
-.cache/**
 _deps/**
 **/CMakeFiles/**
-**CMakeCache.txt
-**.cmake
-
-# Ninja
-.ninja_deps
-.ninja_log
-build.ninja
 
 # Build output
-bin/**
 build/**
 compile_commands.json
