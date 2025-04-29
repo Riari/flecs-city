@@ -5,7 +5,6 @@
 #include <spdlog/spdlog.h>
 
 #include <Modules/Core/Core.h>
-#include <Modules/Test/Test.h>
 
 int main()
 {
@@ -18,11 +17,8 @@ int main()
 
     flecs::world ecs;
 
-    spdlog::info("Created flecs::world: {}", 2);
-
     std::vector<fc::Module> modules{
         fc::Core::MODULE,
-        fc::Test::MODULE,
     };
 
     for (auto module : modules)
