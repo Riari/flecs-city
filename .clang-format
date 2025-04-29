@@ -1,0 +1,21 @@
+---
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 0
+SortIncludes: false
+AlignAfterOpenBracket: BlockIndent
+NamespaceIndentation: None
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterNamespace: true
+    AfterClass: true
+    AfterStruct: true
+    AfterFunction: true
+    AfterEnum: true
+    AfterUnion: true
+    AfterControlStatement: true
+    AfterCaseLabel: true
+    BeforeLambdaBody: false
+    BeforeCatch: true
+    BeforeElse: true
+---
