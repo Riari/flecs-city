@@ -1,3 +1,6 @@
 .cache/**
 build/**
+_deps/**
+build.ninja
 compile_commands.json
+**.cmake
