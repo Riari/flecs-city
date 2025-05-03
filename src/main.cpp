@@ -4,6 +4,12 @@
 #include <raylib.h>
 #include <spdlog/spdlog.h>
 
+#include <steam/steamnetworkingsockets.h>
+#include <steam/isteamnetworkingutils.h>
+#ifndef STEAMNETWORKINGSOCKETS_OPENSOURCE
+#include <steam/steam_api.h>
+#endif
+
 #include <Modules/Core/Core.h>
 
 int main()
@@ -30,6 +36,12 @@ int main()
     {
         module.InitECS(ecs);
     }
+
+    ISteamNetworkingSockets* socketInterface = SteamNetworkingSockets();
+
+    SteamNetworkingIPAddr serverLocalAddr;
+    serverLocalAddr.Clear();
+    serverLocalAddr.m_port = 6969;
 
     while (!WindowShouldClose())
     {

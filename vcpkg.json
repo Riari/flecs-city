@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+    "flecs",
+    "raylib",
+    "spdlog",
+    "gamenetworkingsockets"
+  ]
+}

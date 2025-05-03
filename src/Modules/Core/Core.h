@@ -1,8 +1,7 @@
 #pragma once
 
+#include <Module/Macros.h>
 #include <Module/Module.h>
-
-#include "Macros.h"
 
 #ifdef CORE_EXPORTS
 #define CORE_API API_EXPORT

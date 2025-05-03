@@ -7,6 +7,7 @@ target_link_libraries(CoreDependencies
         flecs::flecs
         raylib
         spdlog::spdlog
+        GameNetworkingSockets::shared
 )
 
 set(SOURCES
