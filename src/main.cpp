@@ -80,6 +80,37 @@ static void ShutdownSteamDatagramConnectionSockets()
     GameNetworkingSockets_Kill();
 }
 
+static void RaylibLog(int type, const char* text, va_list args)
+{
+    char buffer[2048];
+    vsnprintf(buffer, sizeof(buffer), text, args);
+
+    // Forward to spdlog with appropriate level
+    switch (type)
+    {
+        case LOG_TRACE:
+            spdlog::trace("{}", buffer);
+            break;
+        case LOG_DEBUG:
+            spdlog::debug("{}", buffer);
+            break;
+        case LOG_INFO:
+            spdlog::info("{}", buffer);
+            break;
+        case LOG_WARNING:
+            spdlog::warn("{}", buffer);
+            break;
+        case LOG_ERROR:
+            spdlog::error("{}", buffer);
+            break;
+        case LOG_FATAL:
+            spdlog::critical("{}", buffer);
+            break;
+        default:
+            break;
+    }
+}
+
 int main(int argc, char** argv)
 {
     args::ArgumentParser parser("Flecs City");
@@ -94,6 +125,8 @@ int main(int argc, char** argv)
     {
         server.Start(6969);
     }
+
+    SetTraceLogCallback(RaylibLog);
 
     constexpr int width = 1920;
     constexpr int height = 1080;
@@ -127,6 +160,9 @@ int main(int argc, char** argv)
     }
 
     CloseWindow();
+
+    if (listen)
+        server.Stop();
 
     ShutdownSteamDatagramConnectionSockets();
 
