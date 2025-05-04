@@ -4,8 +4,9 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Launch flecs-city (Windows)",
-            "program": "${workspaceFolder}/build/bin/flecs-city.exe"
+            "name": "Launch flecs-city as server (Windows)",
+            "program": "${workspaceFolder}/build/bin/flecs-city.exe",
+            "args": ["--listen"]
         }
     ]
 }

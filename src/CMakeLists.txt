@@ -12,6 +12,8 @@ target_link_libraries(CoreDependencies
 
 set(SOURCES
     main.cpp
+    Network/Server.cpp
+    Network/Client.cpp
 )
 
 add_executable(
@@ -36,6 +38,7 @@ endforeach()
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
+        taywee::args
         CoreDependencies
         ${MODULES}
 )

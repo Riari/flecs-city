@@ -23,6 +23,7 @@ find_package(flecs CONFIG REQUIRED)
 find_package(raylib CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(GameNetworkingSockets CONFIG REQUIRED)
+find_package(args CONFIG REQUIRED)
 
 # flecs options
 set(FLECS_STATIC OFF CACHE BOOL "" FORCE)
