@@ -88,7 +88,8 @@ static void RaylibLog(int type, const char* text, va_list args)
 int main(int argc, char** argv)
 {
     fc::Environment::Options options;
-    options.Init(argc, argv);
+    if (!options.Init(argc, argv))
+        return;
 
     InitSteamDatagramConnectionSockets();
 
