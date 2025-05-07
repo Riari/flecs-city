@@ -12,6 +12,7 @@ target_link_libraries(CoreDependencies
 
 set(SOURCES
     main.cpp
+    Environment/Options.cpp
     Network/Server.cpp
     Network/Client.cpp
 )

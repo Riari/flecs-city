@@ -9,34 +9,8 @@
 
 #include <Modules/Core/Core.h>
 
+#include "Environment/Options.h"
 #include "Network/Server.h"
-
-static bool InitArgs(args::ArgumentParser& parser, int argc, char** argv)
-{
-    try
-    {
-        parser.ParseCLI(argc, argv);
-    }
-    catch (args::Help)
-    {
-        std::cout << parser;
-        return false;
-    }
-    catch (args::ParseError e)
-    {
-        std::cerr << e.what() << std::endl;
-        std::cerr << parser;
-        return false;
-    }
-    catch (args::ValidationError e)
-    {
-        std::cerr << e.what() << std::endl;
-        std::cerr << parser;
-        return false;
-    }
-
-    return true;
-}
 
 SteamNetworkingMicroseconds gLogTimeZero;
 
@@ -113,18 +87,15 @@ static void RaylibLog(int type, const char* text, va_list args)
 
 int main(int argc, char** argv)
 {
-    args::ArgumentParser parser("Flecs City");
-    args::Flag listen(parser, "listen", "Start in dedicated server mode", {"listen"});
-
-    InitArgs(parser, argc, argv);
+    fc::Environment::Options options;
+    options.Init(argc, argv);
 
     InitSteamDatagramConnectionSockets();
 
     fc::Network::Server server;
-    if (listen)
-    {
+
+    if (options.IsListenMode())
         server.Start(6969);
-    }
 
     SetTraceLogCallback(RaylibLog);
 
@@ -153,7 +124,7 @@ int main(int argc, char** argv)
 
     while (!WindowShouldClose())
     {
-        if (listen)
+        if (options.IsListenMode())
             server.Poll();
 
         ecs.progress();
@@ -161,7 +132,7 @@ int main(int argc, char** argv)
 
     CloseWindow();
 
-    if (listen)
+    if (options.IsListenMode())
         server.Stop();
 
     ShutdownSteamDatagramConnectionSockets();
