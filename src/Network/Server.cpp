@@ -3,8 +3,6 @@
 #include <chrono>
 
 #include <spdlog/spdlog.h>
-#include <steam/isteamnetworkingsockets.h>
-#include <steam/steamnetworkingtypes.h>
 
 namespace fc::Network
 {

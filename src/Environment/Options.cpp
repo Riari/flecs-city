@@ -31,9 +31,19 @@ bool Options::Init(int argc, char** argv)
     return true;
 }
 
-bool Options::IsListenMode() const
+bool Options::IsServer() const
 {
     return mListen;
+}
+
+bool Options::IsClient() const
+{
+    return mConnect;
+}
+
+std::string Options::GetConnectAddress()
+{
+    return args::get(mConnect);
 }
 
 } // namespace fc::Environment

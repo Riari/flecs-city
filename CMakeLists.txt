@@ -35,4 +35,8 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 # spdlog options
 set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
 
+# GameNetworkingSockets options
+set(BUILD_STATIC_LIB OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIB ON CACHE BOOL "" FORCE)
+
 add_subdirectory(src)

@@ -1,6 +1,5 @@
 #include <vector>
 
-#include <args.hxx>
 #include <flecs.h>
 #include <raylib.h>
 #include <spdlog/spdlog.h>
@@ -10,6 +9,7 @@
 #include <Modules/Core/Core.h>
 
 #include "Environment/Options.h"
+#include "Network/Client.h"
 #include "Network/Server.h"
 
 SteamNetworkingMicroseconds gLogTimeZero;
@@ -94,9 +94,26 @@ int main(int argc, char** argv)
     InitSteamDatagramConnectionSockets();
 
     fc::Network::Server server;
+    fc::Network::Client client;
 
-    if (options.IsListenMode())
-        server.Start(6969);
+    if (options.IsServer())
+    {
+        if (!server.Start(6969))
+            return -1;
+    }
+    else if (options.IsClient())
+    {
+        SteamNetworkingIPAddr connectAddress;
+        connectAddress.Clear();
+        if (!connectAddress.ParseString(options.GetConnectAddress().c_str()))
+        {
+            spdlog::error("Failed to connect to {}", options.GetConnectAddress());
+            return -1;
+        }
+
+        if (!client.Start(connectAddress))
+            return -1;
+    }
 
     SetTraceLogCallback(RaylibLog);
 
@@ -125,16 +142,20 @@ int main(int argc, char** argv)
 
     while (!WindowShouldClose())
     {
-        if (options.IsListenMode())
+        if (options.IsServer())
             server.Poll();
+        else if (options.IsClient())
+            client.Poll();
 
         ecs.progress();
     }
 
     CloseWindow();
 
-    if (options.IsListenMode())
+    if (options.IsServer())
         server.Stop();
+    else if (options.IsClient())
+        client.Stop();
 
     ShutdownSteamDatagramConnectionSockets();
 
