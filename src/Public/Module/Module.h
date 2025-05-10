@@ -12,9 +12,17 @@ struct Module
     /// @param ecs The flecs world.
     void (*RegisterComponents)(flecs::world& ecs);
 
-    /// @brief For initialising ECS entities (including systems/queries).
+    /// @brief For initialising common ECS entities (including systems/queries).
     /// @param ecs The flecs world.
-    void (*InitECS)(flecs::world& ecs);
+    void (*InitCommonECS)(flecs::world& ecs);
+
+    /// @brief For initialising server-side ECS entities (including systems/queries).
+    /// @param ecs The flecs world.
+    void (*InitServerECS)(flecs::world& ecs);
+
+    /// @brief For initialising client-side ECS entities (including systems/queries).
+    /// @param ecs The flecs world.
+    void (*InitClientECS)(flecs::world& ecs);
 };
 
 }; // namespace fc

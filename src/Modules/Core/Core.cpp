@@ -18,10 +18,25 @@ static void RegisterComponents(flecs::world &ecs)
     ecs.component<TextComponent>();
 }
 
-static void InitECS(flecs::world &ecs)
+static void InitCommonECS(flecs::world &ecs)
 {
     fc::InitPhases(ecs);
+}
 
+static void InitServerECS(flecs::world &ecs)
+{
+    ecs.system("PreDraw")
+        .kind(fc::PreDraw)
+        .each([]() {
+            BeginDrawing();
+            ClearBackground(BLACK);
+        });
+
+    ecs.system("EndDrawing").kind(fc::PostDraw).each([]() { EndDrawing(); });
+}
+
+static void InitClientECS(flecs::world &ecs)
+{
     // Entity data
     Camera3D camera3D = {0};
     camera3D.position = (Vector3){0.0f, 10.0f, 10.0f};  // Camera position
@@ -86,6 +101,6 @@ static void InitECS(flecs::world &ecs)
     ecs.system("EndDrawing").kind(fc::PostDraw).each([]() { EndDrawing(); });
 }
 
-fc::Module MODULE{&RegisterComponents, &InitECS};
+fc::Module MODULE{&RegisterComponents, &InitCommonECS, &InitServerECS, &InitClientECS};
 
 };  // namespace fc::Core

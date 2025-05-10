@@ -18,7 +18,7 @@ bool Client::Start(const SteamNetworkingIPAddr& serverAddress)
     SteamNetworkingConfigValue_t opt;
     opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)SteamNetConnectionStatusChangedCallback);
 
-    spdlog::info("Connecting to server at %s...", address);
+    spdlog::info("Connecting to server at {}...", address);
     mConnection = mInterface->ConnectByIPAddress(serverAddress, 1, &opt);
     if (mConnection == k_HSteamNetConnection_Invalid)
     {

@@ -17,7 +17,7 @@ SteamNetworkingMicroseconds gLogTimeZero;
 static void DebugOutput(ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
 {
     SteamNetworkingMicroseconds time = SteamNetworkingUtils()->GetLocalTimestamp() - gLogTimeZero;
-    spdlog::debug("%10.6f %s", time * 1e-6, pszMsg);
+    spdlog::debug("{0:10.6f} {}", time * 1e-6, pszMsg);
     fflush(stdout);
     if (eType == k_ESteamNetworkingSocketsDebugOutputType_Bug)
     {
@@ -31,7 +31,7 @@ static bool InitSteamDatagramConnectionSockets()
     SteamDatagramErrMsg error;
     if (!GameNetworkingSockets_Init(nullptr, error))
     {
-        spdlog::error("GameNetworkingSockets_Init failed. %s", error);
+        spdlog::error("GameNetworkingSockets_Init failed. {}", error);
         return false;
     }
 
@@ -114,13 +114,18 @@ int main(int argc, char** argv)
         if (!client.Start(connectAddress))
             return -1;
     }
+    else
+    {
+        spdlog::error("Must specify either --listen or --connect [address].");
+        return -1;
+    }
 
     SetTraceLogCallback(RaylibLog);
 
-    constexpr int width = 1920;
-    constexpr int height = 1080;
+    constexpr int width = 800;
+    constexpr int height = 600;
 
-    InitWindow(width, height, "Test window");
+    InitWindow(width, height, options.IsServer() ? "Flecs City (Server)" : "Flecs City (Client)");
 
     SetTargetFPS(60);
 
@@ -137,7 +142,9 @@ int main(int argc, char** argv)
 
     for (auto module : modules)
     {
-        module.InitECS(ecs);
+        module.InitCommonECS(ecs);
+        if (options.IsServer()) module.InitServerECS(ecs);
+        else if (options.IsClient()) module.InitClientECS(ecs);
     }
 
     while (!WindowShouldClose())
