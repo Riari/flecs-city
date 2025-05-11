@@ -1,4 +1,5 @@
 #include "Options.h"
+#include <steam/steamtypes.h>
 
 
 namespace fc::Environment
@@ -39,6 +40,11 @@ bool Options::IsServer() const
 bool Options::IsClient() const
 {
     return mConnect;
+}
+
+uint32_t Options::GetListenPort()
+{
+    return args::get(mListen);
 }
 
 std::string Options::GetConnectAddress()

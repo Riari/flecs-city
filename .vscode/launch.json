@@ -1,12 +1,33 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Launch flecs-city as server (Windows)",
-            "program": "${workspaceFolder}/build/bin/flecs-city.exe",
-            "args": ["--listen"]
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Launch embedded (Windows)",
+      "program": "${workspaceFolder}/build/bin/flecs-city.exe",
+      "args": [
+        "--listen",
+        "--connect '127.0.0.1:6969'"
+      ]
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Launch server (Windows)",
+      "program": "${workspaceFolder}/build/bin/flecs-city.exe",
+      "args": [
+        "--listen"
+      ]
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Launch client (Windows)",
+      "program": "${workspaceFolder}/build/bin/flecs-city.exe",
+      "args": [
+        "--connect '127.0.0.1:6969'"
+      ]
+    }
+  ]
 }

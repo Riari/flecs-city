@@ -2,6 +2,7 @@
 
 #include <flecs.h>
 #include <raylib.h>
+#include <spdlog/spdlog.h>
 
 #include "ECS/Components/CameraComponent.h"
 #include "ECS/Components/PositionComponent.h"
@@ -10,6 +11,9 @@
 
 namespace fc::Core
 {
+
+flecs::system gPreDrawSystem;
+flecs::system gEndDrawSystem;
 
 static void RegisterComponents(flecs::world &ecs)
 {
@@ -25,14 +29,18 @@ static void InitCommonECS(flecs::world &ecs)
 
 static void InitServerECS(flecs::world &ecs)
 {
-    ecs.system("PreDraw")
-        .kind(fc::PreDraw)
-        .each([]() {
-            BeginDrawing();
-            ClearBackground(BLACK);
-        });
+    gPreDrawSystem = ecs.system()
+                         .kind(fc::PreDraw)
+                         .each([]() {
+                             BeginDrawing();
+                             ClearBackground(BLACK);
+                         });
 
-    ecs.system("EndDrawing").kind(fc::PostDraw).each([]() { EndDrawing(); });
+    ecs.system("Test").kind(fc::Draw2D).each([]() {
+        DrawText("This is the server window", 50, 50, 30.0, WHITE);
+    });
+
+    gEndDrawSystem = ecs.system().kind(fc::PostDraw).each([]() { EndDrawing(); });
 }
 
 static void InitClientECS(flecs::world &ecs)
@@ -55,24 +63,24 @@ static void InitClientECS(flecs::world &ecs)
                              .set<TextComponent>({"Hello world!"});
 
     // Systems
-    ecs.system<CameraComponent>("PreDraw")
-        .kind(fc::PreDraw)
-        .term_at(0)
-        .singleton()
-        .each([](CameraComponent &camera) {
-            if (IsCursorHidden())
-            {
-                UpdateCamera(&camera.mCamera, CAMERA_FREE);
-            }
+    gPreDrawSystem = ecs.system<CameraComponent>()
+                         .kind(fc::PreDraw)
+                         .term_at(0)
+                         .singleton()
+                         .each([](CameraComponent &camera) {
+                             if (IsCursorHidden())
+                             {
+                                 UpdateCamera(&camera.mCamera, CAMERA_FREE);
+                             }
 
-            if (IsKeyPressed(KEY_C))
-            {
-                IsCursorHidden() ? EnableCursor() : DisableCursor();
-            }
+                             if (IsKeyPressed(KEY_C))
+                             {
+                                 IsCursorHidden() ? EnableCursor() : DisableCursor();
+                             }
 
-            BeginDrawing();
-            ClearBackground(LIGHTGRAY);
-        });
+                             BeginDrawing();
+                             ClearBackground(LIGHTGRAY);
+                         });
 
     ecs.system<const CameraComponent>("BeginDraw3D")
         .kind(fc::Draw3D)
@@ -84,21 +92,20 @@ static void InitClientECS(flecs::world &ecs)
 
     ecs.system("EndDraw3D").kind(fc::Draw3D).each([]() { EndMode3D(); });
 
-    flecs::system textDrawSystem =
-        ecs.system<const CameraComponent, const PositionComponent, const TextComponent>("DrawText")
-            .kind(fc::Draw2D)
-            .term_at(0)
-            .singleton()
-            .each([](const CameraComponent &camera,
-                     const PositionComponent &position,
-                     const TextComponent &text) {
+    ecs.system<const CameraComponent, const PositionComponent, const TextComponent>("DrawText")
+        .kind(fc::Draw2D)
+        .term_at(0)
+        .singleton()
+        .each([](const CameraComponent &camera,
+                 const PositionComponent &position,
+                 const TextComponent &text) {
             const Vector3 &cameraPos = camera.mCamera.position;
             DrawText(TextFormat("Camera position: %f, %f, %f", cameraPos.x,
                                 cameraPos.y, cameraPos.z),
                      static_cast<int>(position.mPosition.x),
                      static_cast<int>(position.mPosition.y), 30.0, WHITE); });
 
-    ecs.system("EndDrawing").kind(fc::PostDraw).each([]() { EndDrawing(); });
+    gEndDrawSystem = ecs.system().kind(fc::PostDraw).each([]() { EndDrawing(); });
 }
 
 fc::Module MODULE{&RegisterComponents, &InitCommonECS, &InitServerECS, &InitClientECS};

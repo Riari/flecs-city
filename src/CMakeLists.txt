@@ -12,9 +12,10 @@ target_link_libraries(CoreDependencies
 
 set(SOURCES
     main.cpp
+    Application/Application.cpp
     Environment/Options.cpp
-    Network/Server.cpp
     Network/Client.cpp
+    Network/Server.cpp
 )
 
 add_executable(
