@@ -17,6 +17,7 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
 {
     fc::Logging::Initialise();
 
+    // TODO: when running as a server, spawning a window won't always be possible. It should probably have a basic CLI command system instead.
     InitWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, "Flecs City (Server)");
     SetTargetFPS(60);
 
@@ -54,6 +55,8 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
 
 int Application::RunAsServer(fc::Environment::Options& options, std::vector<Module>& modules)
 {
+    // TODO: Implement basic CLI commands to do basic server ops.
+    // TODO: Network stuff should probably run in a separate thread.
     fc::Network::Server server;
 
     if (!server.Start(options.GetListenPort()))
