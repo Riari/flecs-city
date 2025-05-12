@@ -9,5 +9,28 @@
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     }
+  ],
+  "buildPresets": [
+    {
+      "name": "ninja",
+      "configurePreset": "vcpkg",
+      "displayName": "Build with Ninja",
+      "description": "Build with Ninja"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "vcpkg",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "vcpkg"
+        },
+        {
+          "type": "build",
+          "name": "ninja"
+        }
+      ]
+    }
   ]
 }
