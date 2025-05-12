@@ -27,6 +27,6 @@ jobs:
       
     - uses: lukka/run-cmake@v10
       with:
-        configurePreset: 'ninja-multi-vcpkg'
-        buildPreset: 'ninja-multi-vcpkg'
-        testPreset: 'ninja-multi-vcpkg'
+        configurePreset: 'vcpkg'
+        buildPreset: 'vcpkg'
+        testPreset: 'vcpkg'
