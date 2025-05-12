@@ -39,7 +39,7 @@ jobs:
       with:
         submodules: true
 
-    - if: runner.os == "Linux
+    - if: runner.os == "Linux"
       run: sudo apt install -y libx11-dev
 
     - uses: lukka/get-cmake@latest
