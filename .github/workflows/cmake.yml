@@ -18,12 +18,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - uses: lukka/get-cmake@latest
 
     - uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
       
     - uses: lukka/run-cmake@v10
       with:
