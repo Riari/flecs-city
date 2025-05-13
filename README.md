@@ -4,7 +4,7 @@ This is a C++ sandbox project for exploring Flecs v4 and raylib (as well as othe
 
 ## Building
 
-Currently set up with [vcpkg](https://vcpkg.io/).
+Currently set up with [vcpkg](https://vcpkg.io/). Run `./vcpkg/bootstrap-vcpkg.sh` (`./vcpkg/bootstrap-vcpkg.bat` on Windows) to bootstrap it.
 
 1. Run `cmake --preset=vcpkg` to configure
 2. Run `cmake --build build` to build
