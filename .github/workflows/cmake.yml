@@ -14,25 +14,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        build_type: [Release]
-        c_compiler: [gcc, clang, cl]
-        include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
 
     env:
       VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
@@ -53,8 +34,8 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ${{ github.workspace }}/vcpkg_cache
-        key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json') }}
-        restore-keys: vcpkg-${{ matrix.triplet }}-
+        key: vcpkg-${{ matrix.os }}-${{ hashFiles('vcpkg.json') }}
+        restore-keys: vcpkg-${{ matrix.os }}-
 
     - uses: lukka/run-cmake@v10
       with:
@@ -64,4 +45,4 @@ jobs:
       uses: actions/cache/save@v4
       with:
         path: ${{ github.workspace }}/vcpkg_cache
-        key: vcpkg-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json') }}
+        key: vcpkg-${{ matrix.os }}-${{ hashFiles('vcpkg.json') }}
