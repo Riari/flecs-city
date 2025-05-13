@@ -47,11 +47,11 @@ static void InitClientECS(flecs::world &ecs)
 {
     // Entity data
     Camera3D camera3D = {0};
-    camera3D.position = (Vector3){0.0f, 10.0f, 10.0f};  // Camera position
-    camera3D.target = (Vector3){0.0f, 0.0f, 0.0f};      // Camera looking at point
-    camera3D.up = (Vector3){0.0f, 1.0f, 0.0f};          // Camera up vector (rotation towards target)
-    camera3D.fovy = 45.0f;                              // Camera field-of-view Y
-    camera3D.projection = CAMERA_PERSPECTIVE;           // Camera mode type
+    camera3D.position = {0.0f, 10.0f, 10.0f};
+    camera3D.target = {0.0f, 0.0f, 0.0f};
+    camera3D.up = {0.0f, 1.0f, 0.0f};
+    camera3D.fovy = 45.0f;
+    camera3D.projection = CAMERA_PERSPECTIVE;
 
     // Singletons and entities
     ecs.set<CameraComponent>({camera3D});
@@ -60,7 +60,7 @@ static void InitClientECS(flecs::world &ecs)
 
     flecs::entity text = ecs.entity()
                              .set<PositionComponent>({300, 300, 0})
-                             .set<TextComponent>({"Hello world!"});
+                             .set<TextComponent>({});
 
     // Systems
     gPreDrawSystem = ecs.system<CameraComponent>()
