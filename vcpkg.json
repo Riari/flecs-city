@@ -1,9 +1,10 @@
 {
   "dependencies": [
+    "args",
     "flecs",
     "gamenetworkingsockets",
+    "glfw3",
     "raylib",
-    "spdlog",
-    "args"
+    "spdlog"
   ]
 }

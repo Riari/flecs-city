@@ -15,15 +15,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 set(VCPKG_LIBRARY_LINKAGE dynamic)
 
-find_package(flecs CONFIG REQUIRED)
-find_package(raylib CONFIG REQUIRED)
-find_package(spdlog CONFIG REQUIRED)
-find_package(GameNetworkingSockets CONFIG REQUIRED)
-find_package(args CONFIG REQUIRED)
+# General options
+set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 
 # flecs options
 set(FLECS_STATIC OFF CACHE BOOL "" FORCE)
@@ -34,7 +29,7 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
 # raylib options
-set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+set(USE_EXTERNAL_GLFW "ON" CACHE STRING "" FORCE)
 
 # spdlog options
 set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
@@ -42,5 +37,12 @@ set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
 # GameNetworkingSockets options
 set(BUILD_STATIC_LIB OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIB ON CACHE BOOL "" FORCE)
+
+find_package(flecs CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(raylib CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(GameNetworkingSockets CONFIG REQUIRED)
+find_package(args CONFIG REQUIRED)
 
 add_subdirectory(src)
