@@ -2,13 +2,14 @@ add_library(CoreDependencies INTERFACE)
 
 target_include_directories(CoreDependencies INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Public)
 
-target_link_libraries(CoreDependencies
-    INTERFACE
-        flecs::flecs
-        raylib
-        spdlog::spdlog
-        GameNetworkingSockets::shared
+set(DEPENDENCIES
+    flecs::flecs
+    raylib
+    spdlog::spdlog
+    GameNetworkingSockets::shared
 )
+
+target_link_libraries(CoreDependencies INTERFACE ${DEPENDENCIES} ${GLFW_LIBRARIES})
 
 set(SOURCES
     main.cpp
