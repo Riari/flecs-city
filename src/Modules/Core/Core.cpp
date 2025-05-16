@@ -29,18 +29,9 @@ static void InitCommonECS(flecs::world &ecs)
 
 static void InitServerECS(flecs::world &ecs)
 {
-    gPreDrawSystem = ecs.system()
-                         .kind(fc::PreDraw)
-                         .each([]() {
-                             BeginDrawing();
-                             ClearBackground(BLACK);
-                         });
-
     ecs.system("Test").kind(fc::Draw2D).each([]() {
-        DrawText("This is the server window", 50, 50, 30.0, WHITE);
+        spdlog::info("Test system tick");
     });
-
-    gEndDrawSystem = ecs.system().kind(fc::PostDraw).each([]() { EndDrawing(); });
 }
 
 static void InitClientECS(flecs::world &ecs)

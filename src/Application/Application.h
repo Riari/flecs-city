@@ -25,6 +25,8 @@ public:
     int Run(fc::Environment::Options& options, std::vector<Module>& modules);
 
 private:
+    bool mShouldQuit{false};
+
     flecs::world mWorld;
 
     Application() {}

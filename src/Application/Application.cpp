@@ -17,10 +17,6 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
 {
     fc::Logging::Initialise();
 
-    // TODO: when running as a server, spawning a window won't always be possible. It should probably have a basic CLI command system instead.
-    InitWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, "Flecs City (Server)");
-    SetTargetFPS(60);
-
     spdlog::info("Registering components...");
     for (auto module : modules)
     {
@@ -48,8 +44,6 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
         status = RunAsMonolith(options, modules);
     }
 
-    CloseWindow();
-
     return status;
 }
 
@@ -72,7 +66,7 @@ int Application::RunAsServer(fc::Environment::Options& options, std::vector<Modu
     }
 
     spdlog::info("Entering main loop...");
-    while (!WindowShouldClose())
+    while (!mShouldQuit)
     {
         server.Poll();
         mWorld.progress();
@@ -86,6 +80,9 @@ int Application::RunAsServer(fc::Environment::Options& options, std::vector<Modu
 int Application::RunAsClient(fc::Environment::Options& options, std::vector<Module>& modules)
 {
     fc::Network::Client client;
+
+    InitWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, "Flecs City");
+    SetTargetFPS(60);
 
     SteamNetworkingIPAddr connectAddress;
     connectAddress.Clear();
@@ -112,11 +109,16 @@ int Application::RunAsClient(fc::Environment::Options& options, std::vector<Modu
         mWorld.progress();
     }
 
+    CloseWindow();
+
     return 0;
 }
 
 int Application::RunAsMonolith(fc::Environment::Options& options, std::vector<Module>& modules)
 {
+    InitWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, "Flecs City");
+    SetTargetFPS(60);
+
     spdlog::info("Initialising ECS...");
     for (auto module : modules)
     {
@@ -130,6 +132,8 @@ int Application::RunAsMonolith(fc::Environment::Options& options, std::vector<Mo
     {
         mWorld.progress();
     }
+
+    CloseWindow();
 
     return 0;
 }
