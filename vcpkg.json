@@ -2,7 +2,7 @@
   "dependencies": [
     "args",
     "flecs",
-    "gamenetworkingsockets",
+    "enet",
     "glfw3",
     "raylib",
     "spdlog"

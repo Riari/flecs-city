@@ -1,5 +1,4 @@
 #include "Options.h"
-#include <steam/steamtypes.h>
 
 
 namespace fc::Environment
@@ -47,7 +46,7 @@ uint32_t Options::GetListenPort()
     return args::get(mListen);
 }
 
-std::string Options::GetConnectAddress()
+ConnectAddress Options::GetConnectAddress()
 {
     return args::get(mConnect);
 }

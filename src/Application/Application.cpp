@@ -1,11 +1,13 @@
 #include "Application.h"
 
+#include <cstdlib>
+
 #include <raylib.h>
+#include <enet/enet.h>
 
 #include "Logging/Utils.h"
 #include "Network/Client.h"
 #include "Network/Server.h"
-#include "Network/Utils.h"
 
 namespace fc
 {
@@ -26,7 +28,11 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
     int status;
     if (options.IsServer() || options.IsClient())
     {
-        fc::Network::InitSteamDatagramConnectionSockets();
+        if (enet_initialize() != 0)
+        {
+            spdlog::error("An error occurred while initializing ENet.");
+            return -1;
+        }
 
         if (options.IsServer())
         {
@@ -37,7 +43,7 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
             status = RunAsClient(options, modules);
         }
 
-        fc::Network::ShutdownSteamDatagramConnectionSockets();
+        atexit(enet_deinitialize);
     }
     else
     {
@@ -51,12 +57,7 @@ int Application::RunAsServer(fc::Environment::Options& options, std::vector<Modu
 {
     // TODO: Implement basic CLI commands to do basic server ops.
     // TODO: Network stuff should probably run in a separate thread.
-    fc::Network::Server server;
-
-    if (!server.Start(options.GetListenPort()))
-    {
-        return -1;
-    }
+    fc::Network::Server server(options.GetListenPort());
 
     spdlog::info("Initialising ECS...");
     for (auto module : modules)
@@ -68,11 +69,8 @@ int Application::RunAsServer(fc::Environment::Options& options, std::vector<Modu
     spdlog::info("Entering main loop...");
     while (!mShouldQuit)
     {
-        server.Poll();
         mWorld.progress();
     }
-
-    server.Stop();
 
     return 0;
 }
@@ -84,15 +82,8 @@ int Application::RunAsClient(fc::Environment::Options& options, std::vector<Modu
     InitWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, "Flecs City");
     SetTargetFPS(60);
 
-    SteamNetworkingIPAddr connectAddress;
-    connectAddress.Clear();
-    if (!connectAddress.ParseString(options.GetConnectAddress().c_str()))
-    {
-        spdlog::error("Failed to connect to {}", options.GetConnectAddress());
-        return -1;
-    }
-
-    if (!client.Start(connectAddress))
+    Environment::ConnectAddress connectAddress = options.GetConnectAddress();
+    if (!client.Connect(connectAddress.mHost, connectAddress.mPort))
         return -1;
 
     spdlog::info("Initialising ECS...");
@@ -105,7 +96,6 @@ int Application::RunAsClient(fc::Environment::Options& options, std::vector<Modu
     spdlog::info("Entering main loop...");
     while (!WindowShouldClose())
     {
-        client.Poll();
         mWorld.progress();
     }
 

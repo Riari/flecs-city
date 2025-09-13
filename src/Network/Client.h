@@ -1,7 +1,6 @@
 #pragma once
 
-#include <steam/isteamnetworkingsockets.h>
-#include <steam/steamnetworkingtypes.h>
+#include <enet/enet.h>
 
 namespace fc::Network
 {
@@ -9,25 +8,15 @@ namespace fc::Network
 class Client
 {
 public:
-    bool Start(const SteamNetworkingIPAddr& serverAddress);
-    void Poll();
-    void Stop();
+    Client();
+    ~Client();
+
+    bool Connect(const char* address, uint32_t port);
 
 private:
-    HSteamNetConnection mConnection;
-    ISteamNetworkingSockets* mInterface;
-
-    void PollIncomingMessages();
-
-    void OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* info);
-
-    static Client* sCallbackInstance;
-    static void SteamNetConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* info)
-    {
-        sCallbackInstance->OnSteamNetConnectionStatusChanged(info);
-    }
-
-    void PollConnectionStateChanges();
+    ENetHost* mHost;
+    ENetAddress mConnectionAddress;
+    ENetPeer* mPeer;
 };
 
 } // namespace fc::Network

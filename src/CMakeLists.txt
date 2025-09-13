@@ -8,7 +8,7 @@ target_link_libraries(CoreDependencies
     glfw
     raylib
     spdlog::spdlog
-    GameNetworkingSockets::shared
+    unofficial::enet::enet
 )
 
 set(SOURCES
