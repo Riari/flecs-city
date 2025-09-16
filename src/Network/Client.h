@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include <enet/enet.h>
 
 namespace fc::Network

@@ -11,6 +11,15 @@ target_link_libraries(CoreDependencies
     unofficial::enet::enet
 )
 
+if(WIN32)
+    target_link_libraries(CoreDependencies INTERFACE winmm ws2_32)
+    target_compile_definitions(CoreDependencies INTERFACE
+        WIN32_LEAN_AND_MEAN
+        NOGDI
+        NOUSER
+    )
+endif()
+
 set(SOURCES
     main.cpp
     Application/Application.cpp

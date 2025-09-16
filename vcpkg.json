@@ -1,8 +1,8 @@
 {
   "dependencies": [
     "args",
-    "flecs",
     "enet",
+    "flecs",
     "glfw3",
     "raylib",
     "spdlog"

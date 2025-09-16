@@ -34,15 +34,11 @@ set(USE_EXTERNAL_GLFW "ON" CACHE STRING "" FORCE)
 # spdlog options
 set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
 
-# GameNetworkingSockets options
-set(BUILD_STATIC_LIB OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIB ON CACHE BOOL "" FORCE)
-
+find_package(args CONFIG REQUIRED)
+find_package(unofficial-enet CONFIG REQUIRED)
 find_package(flecs CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(raylib CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
-find_package(unofficial-enet CONFIG REQUIRED)
-find_package(args CONFIG REQUIRED)
 
 add_subdirectory(src)

@@ -2,8 +2,8 @@
 
 #include <cstdlib>
 
-#include <raylib.h>
 #include <enet/enet.h>
+#include <raylib.h>
 
 #include "Logging/Utils.h"
 #include "Network/Client.h"
