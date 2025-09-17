@@ -31,14 +31,19 @@ bool Options::Init(int argc, char** argv)
     return true;
 }
 
-bool Options::IsServer() const
+bool Options::IsMonolith()
 {
-    return mListen;
+    return args::get(mMode) == RunMode::Monolith;
 }
 
-bool Options::IsClient() const
+bool Options::IsServer()
 {
-    return mConnect;
+    return args::get(mMode) == RunMode::Server;
+}
+
+bool Options::IsClient()
+{
+    return args::get(mMode) == RunMode::Client;
 }
 
 uint32_t Options::GetListenPort()
