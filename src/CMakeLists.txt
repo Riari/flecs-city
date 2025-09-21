@@ -24,8 +24,9 @@ set(SOURCES
     main.cpp
     Application/Application.cpp
     Environment/Options.cpp
-    Network/Client.cpp
-    Network/Server.cpp
+    Network/ClientThread.cpp
+    Network/NetworkThread.cpp
+    Network/ServerThread.cpp
 )
 
 add_executable(

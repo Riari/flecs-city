@@ -30,7 +30,7 @@ static void InitCommonECS(flecs::world &ecs)
 static void InitServerECS(flecs::world &ecs)
 {
     ecs.system("Test").kind(fc::Draw2D).each([]() {
-        spdlog::info("Test system tick");
+        // spdlog::info("Test system tick");
     });
 }
 

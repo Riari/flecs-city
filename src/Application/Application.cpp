@@ -1,13 +1,11 @@
 #include "Application.h"
 
-#include <cstdlib>
-
 #include <enet/enet.h>
 #include <raylib.h>
 
 #include "Logging/Utils.h"
-#include "Network/Client.h"
-#include "Network/Server.h"
+#include "Network/ClientThread.h"
+#include "Network/ServerThread.h"
 
 namespace fc
 {
@@ -28,12 +26,6 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
     int status;
     if (options.IsServer() || options.IsClient())
     {
-        if (enet_initialize() != 0)
-        {
-            spdlog::error("An error occurred while initializing ENet.");
-            return -1;
-        }
-
         if (options.IsServer())
         {
             status = RunAsServer(options, modules);
@@ -42,8 +34,6 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
         {
             status = RunAsClient(options, modules);
         }
-
-        atexit(enet_deinitialize);
     }
     else
     {
@@ -57,7 +47,8 @@ int Application::RunAsServer(fc::Environment::Options& options, std::vector<Modu
 {
     // TODO: Implement basic CLI commands to do basic server ops.
     // TODO: Network stuff should probably run in a separate thread.
-    fc::Network::Server server(options.GetListenPort());
+    fc::Network::ServerThread serverThread(options.GetListenPort());
+    serverThread.Start();
 
     spdlog::info("Initialising ECS...");
     for (auto module : modules)
@@ -77,13 +68,14 @@ int Application::RunAsServer(fc::Environment::Options& options, std::vector<Modu
 
 int Application::RunAsClient(fc::Environment::Options& options, std::vector<Module>& modules)
 {
-    fc::Network::Client client;
+    fc::Network::ClientThread clientThread;
+    clientThread.Start();
 
     InitWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, "Flecs City");
     SetTargetFPS(60);
 
     Environment::ConnectAddress connectAddress = options.GetConnectAddress();
-    if (!client.Connect(connectAddress.mHost, connectAddress.mPort))
+    if (!clientThread.Connect(connectAddress.mHost, connectAddress.mPort))
         return -1;
 
     spdlog::info("Initialising ECS...");

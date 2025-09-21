@@ -4,11 +4,9 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Launch embedded (Windows)",
+      "name": "Launch monolith (Windows)",
       "program": "${workspaceFolder}/build/bin/flecs-city.exe",
       "args": [
-        "--listen",
-        "--connect '127.0.0.1:6969'"
       ]
     },
     {
@@ -17,7 +15,8 @@
       "name": "Launch server (Windows)",
       "program": "${workspaceFolder}/build/bin/flecs-city.exe",
       "args": [
-        "--listen"
+        "--mode",
+        "server"
       ]
     },
     {
@@ -26,7 +25,8 @@
       "name": "Launch client (Windows)",
       "program": "${workspaceFolder}/build/bin/flecs-city.exe",
       "args": [
-        "--connect '127.0.0.1:6969'"
+        "--mode",
+        "client"
       ]
     }
   ]

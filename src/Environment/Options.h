@@ -49,8 +49,8 @@ private:
 
     args::ArgumentParser mParser{"Flecs City"};
     args::MapFlag<std::string, RunMode> mMode{mParser, "mode", "Mode to run in (monolith|server|client). Defaults to monolith.", {'m', "mode"}, mModeMap};
-    args::ValueFlag<uint32_t> mListen{mParser, "listen", "Port to listen on (if mode is Server). Defaults to 6942.", {'l', "listen"}, DEFAULT_LISTEN_PORT};
-    args::ValueFlag<ConnectAddress, ConnectAddressReader> mConnect{mParser, "connect", "Address to connect to (if mode is Client). Defaults to 127.0.0.1:6942.", {'c', "connect"}};
+    args::ValueFlag<uint32_t> mListen{mParser, "listen", "Port to listen on (if mode is Server). Defaults to 6420.", {'l', "listen"}, DEFAULT_LISTEN_PORT};
+    args::ValueFlag<ConnectAddress, ConnectAddressReader> mConnect{mParser, "connect", "Address to connect to (if mode is Client). Defaults to 127.0.0.1:6420.", {'c', "connect"}, DEFAULT_CONNECT_ADDRESS};
 };
 
 } // namespace fc::Environment

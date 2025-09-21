@@ -27,6 +27,8 @@ struct ConnectAddress
     }
 };
 
+const ConnectAddress DEFAULT_CONNECT_ADDRESS = ConnectAddress("127.0.0.1", DEFAULT_LISTEN_PORT);
+
 struct ConnectAddressReader
 {
     void operator()(const std::string& name, const std::string& value, ConnectAddress& destination)
