@@ -1,8 +1,9 @@
 #include "NetworkThread.h"
 
+#include <chrono>
+
 #include <enet/enet.h>
 #include <spdlog/spdlog.h>
-#include <chrono>
 
 namespace fc::Network
 {
@@ -49,15 +50,18 @@ void NetworkThread::Main()
     }
 
     State state = mState.load();
+    ENetEvent event;
     while (state != State::PendingExit)
     {
         if (state == State::Idle)
+        {
+            state = mState.load();
             continue;
+        }
 
         ProcessOutgoingMessages();
 
-        ENetEvent event;
-        int result = enet_host_service(mHost, &event, 10);
+        int result = enet_host_service(mHost, &event, 1000);
         if (result > 0)
         {
             HandleEvent(event);

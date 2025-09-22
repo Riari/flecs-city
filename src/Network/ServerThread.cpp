@@ -42,7 +42,7 @@ void ServerThread::HandleEvent(const ENetEvent& event)
 
                 mConnectedPeers.push_back(event.peer);
 
-                spdlog::info("Client connected from {}:{} (peer ID: {}). Total clients: {}.", hostStr, event.peer->address.port, (void*)event.peer, mConnectedPeers.size() + 1);
+                spdlog::info("Client connected from {}:{} (peer ID: {}). Total clients: {}.", hostStr, event.peer->address.port, event.peer->incomingPeerID, mConnectedPeers.size());
             }
             break;
 
@@ -57,7 +57,7 @@ void ServerThread::HandleEvent(const ENetEvent& event)
                     mConnectedPeers.erase(it);
                 }
 
-                spdlog::info("Client disconnected from {}:{} (peer ID: {}). Remaining clients: {}.", hostStr, event.peer->address.port, (void*)event.peer, mConnectedPeers.size());
+                spdlog::info("Client disconnected from {}:{} (peer ID: {}). Remaining clients: {}.", hostStr, event.peer->address.port, event.peer->incomingPeerID, mConnectedPeers.size());
             }
             break;
 
