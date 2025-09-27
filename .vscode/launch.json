@@ -28,6 +28,37 @@
         "--mode",
         "client"
       ]
+    },
+    {
+      "type": "cppdbg",
+      "request": "launch",
+      "name": "Launch monolith (Linux)",
+      "cwd": "${workspaceFolder}/build/bin",
+      "program": "${workspaceFolder}/build/bin/flecs-city",
+      "args": [
+      ]
+    },
+    {
+      "type": "cppdbg",
+      "request": "launch",
+      "name": "Launch server (Linux)",
+      "cwd": "${workspaceFolder}/build/bin",
+      "program": "${workspaceFolder}/build/bin/flecs-city",
+      "args": [
+        "--mode",
+        "server"
+      ]
+    },
+    {
+      "type": "cppdbg",
+      "request": "launch",
+      "name": "Launch client (Linux)",
+      "cwd": "${workspaceFolder}/build/bin",
+      "program": "${workspaceFolder}/build/bin/flecs-city",
+      "args": [
+        "--mode",
+        "client"
+      ]
     }
   ]
 }
