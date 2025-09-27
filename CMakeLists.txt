@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 
+if(LINUX AND NOT APPLE)
+    set(VCPKG_TARGET_TRIPLET "x64-linux-dynamic" CACHE STRING "")
+endif()
+
 project(
     flecs-city
     VERSION 1.0
