@@ -1,5 +1,6 @@
 #include "ServerThread.h"
 
+#include <algorithm>
 #include <cstdint>
 
 #include <spdlog/spdlog.h>
