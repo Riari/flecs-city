@@ -35,6 +35,25 @@ void NetworkThread::Stop()
     }
 }
 
+void NetworkThread::QueueMessage(const std::string& data, ENetPeer* peer, uint32_t channel, uint32_t flags)
+{
+    const std::vector<uint8_t> vec(data.begin(), data.end());
+    QueueMessage(vec, peer, channel, flags);
+}
+
+void NetworkThread::QueueMessage(const std::vector<uint8_t>& data, ENetPeer* peer, uint32_t channel, uint32_t flags)
+{
+    OutMessage message
+    {
+        .mData = data,
+        .mPeer = peer,
+        .mChannel = channel,
+        .mFlags = flags
+    };
+
+    mOutgoingMessages.push(message);
+}
+
 void NetworkThread::Main()
 {
     if (enet_initialize() != 0)
@@ -91,21 +110,41 @@ void NetworkThread::Main()
 
 void NetworkThread::ProcessOutgoingMessages()
 {
-    // TODO: implement me
+    // TODO: add tuneable throttling
+    while (mOutgoingMessages.size() > 0)
+    {
+        OutMessage& message = mOutgoingMessages.front();
+
+        uint8_t* data = new uint8_t[message.mData.size()];
+        std::copy(message.mData.begin(), message.mData.end(), data);
+
+        ENetPacket* packet = enet_packet_create(data, message.mData.size(), ENET_PACKET_FLAG_RELIABLE | ENET_PACKET_FLAG_NO_ALLOCATE);
+        packet->freeCallback = [](ENetPacket* packet)
+        {
+            delete[] static_cast<uint8_t*>(packet->data);
+            packet->data = nullptr;
+        };
+
+        enet_peer_send(message.mPeer, message.mChannel, packet);
+
+        mOutgoingMessages.pop();
+    }
 }
 
 void NetworkThread::HandleEvent(const ENetEvent& event)
 {
-    // TODO: deduplicate event handling
     switch (event.type)
     {
         case ENET_EVENT_TYPE_RECEIVE:
             {
                 std::vector<uint8_t> data(event.packet->data, event.packet->data + event.packet->dataLength);
 
+                std::string msg(data.begin(), data.end());
+                spdlog::info("Queuing incoming message: {}", msg);
+
                 {
                     std::lock_guard<std::mutex> lock(mIncomingMutex);
-                    mIncomingMessages.push({std::move(data), event.channelID, 0});
+                    mIncomingMessages.push({std::move(data), event.channelID});
                 }
 
                 enet_packet_destroy(event.packet);

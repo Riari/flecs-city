@@ -44,6 +44,8 @@ void ServerThread::HandleEvent(const ENetEvent& event)
                 mConnectedPeers.push_back(event.peer);
 
                 spdlog::info("Client connected from {}:{} (peer ID: {}). Total clients: {}.", hostStr, event.peer->address.port, event.peer->incomingPeerID, mConnectedPeers.size());
+
+                QueueMessage("Welcome", event.peer, 0, ENET_PACKET_FLAG_RELIABLE);
             }
             break;
 

@@ -48,6 +48,7 @@ void ClientThread::Disconnect()
         switch (event.type)
         {
             case ENET_EVENT_TYPE_RECEIVE:
+                // Discard packets while disconnecting
                 enet_packet_destroy(event.packet);
                 break;
 

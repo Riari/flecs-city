@@ -46,7 +46,6 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
 int Application::RunAsServer(fc::Environment::Options& options, std::vector<Module>& modules)
 {
     // TODO: Implement basic CLI commands to do basic server ops.
-    // TODO: Network stuff should probably run in a separate thread.
     fc::Network::ServerThread serverThread(options.GetListenPort());
     serverThread.Start();
 
