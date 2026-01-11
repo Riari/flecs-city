@@ -6,8 +6,10 @@
 
 #include "ECS/Components/CameraComponent.h"
 #include "ECS/Components/PositionComponent.h"
+#include "ECS/Components/ReplicatedComponent.h"
 #include "ECS/Components/TextComponent.h"
 #include "ECS/Phases.h"
+#include "Network/Replication.h"
 
 namespace fc::Core
 {
@@ -15,26 +17,33 @@ namespace fc::Core
 flecs::system gPreDrawSystem;
 flecs::system gEndDrawSystem;
 
-static void RegisterComponents(flecs::world &ecs)
+static void RegisterComponents(flecs::world& ecs)
 {
     ecs.component<CameraComponent>();
     ecs.component<PositionComponent>();
+    ecs.component<ReplicatedComponent>();
     ecs.component<TextComponent>();
+
+    ecs.component<Network::Server::ReplicationRegistrySingleton>().add(flecs::Singleton);
+    ecs.component<Network::Server::ReplicationDestructionSingleton>().add(flecs::Singleton);
+
+    Network::Server::ReplicationRegistrySingleton& registry = ecs.get_mut<Network::Server::ReplicationRegistrySingleton>();
+
+    registry.RegisterComponent<PositionComponent>("PositionComponent", ecs);
+    registry.RegisterComponent<TextComponent>("TextComponent", ecs);
 }
 
-static void InitCommonECS(flecs::world &ecs)
+static void InitCommonECS(flecs::world& ecs)
 {
     fc::InitPhases(ecs);
 }
 
-static void InitServerECS(flecs::world &ecs)
+static void InitServerECS(flecs::world& ecs)
 {
-    ecs.system("Test").kind(fc::Draw2D).each([]() {
-        // spdlog::info("Test system tick");
-    });
+    Network::Server::InitEntityObservers(ecs);
 }
 
-static void InitClientECS(flecs::world &ecs)
+static void InitClientECS(flecs::world& ecs)
 {
     // Entity data
     Camera3D camera3D = {0};
@@ -57,7 +66,6 @@ static void InitClientECS(flecs::world &ecs)
     gPreDrawSystem = ecs.system<CameraComponent>()
                          .kind(fc::PreDraw)
                          .term_at(0)
-                         .singleton()
                          .each([](CameraComponent &camera) {
                              if (IsCursorHidden())
                              {
@@ -86,7 +94,6 @@ static void InitClientECS(flecs::world &ecs)
     ecs.system<const CameraComponent, const PositionComponent, const TextComponent>("DrawText")
         .kind(fc::Draw2D)
         .term_at(0)
-        .singleton()
         .each([](const CameraComponent &camera,
                  const PositionComponent &position,
                  const TextComponent &text) {

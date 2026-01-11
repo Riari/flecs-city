@@ -8,12 +8,14 @@
 namespace fc::Network
 {
 
+/// @brief Represents a generic message received from a peer.
 struct InMessage
 {
     std::vector<uint8_t> mData;
     uint32_t mChannel{0};
 };
 
+/// @brief Represents a generic message ready to send to a peer.
 struct OutMessage
 {
     std::vector<uint8_t> mData;
@@ -22,4 +24,4 @@ struct OutMessage
     uint32_t mFlags{ENET_PACKET_FLAG_RELIABLE};
 };
 
-} // namespace fc::Network
+}; // namespace fc::Network
