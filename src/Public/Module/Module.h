@@ -2,6 +2,8 @@
 
 #include <flecs.h>
 
+#include "ECS/ComponentRegistry.h"
+
 namespace fc
 {
 
@@ -9,8 +11,8 @@ namespace fc
 struct Module
 {
     /// @brief For registering ECS components. Called for all modules before the Init* functions below.
-    /// @param ecs The flecs world.
-    void (*RegisterComponents)(flecs::world& ecs);
+    /// @param registry The component registry to use.
+    void (*RegisterComponents)(ECS::ComponentRegistry& registry);
 
     /// @brief For initialising common ECS entities (including systems/queries).
     /// @param ecs The flecs world.

@@ -3,6 +3,7 @@
 #include <enet/enet.h>
 #include <raylib.h>
 
+#include "ECS/ComponentRegistry.h"
 #include "Logging/Utils.h"
 #include "Network/ClientThread.h"
 #include "Network/ServerThread.h"
@@ -17,10 +18,12 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
 {
     fc::Logging::Initialise();
 
+    ECS::ComponentRegistry componentRegistry(mEcs);
+
     spdlog::info("Registering components...");
     for (auto module : modules)
     {
-        module.RegisterComponents(mEcs);
+        module.RegisterComponents(componentRegistry);
     }
 
     int status;

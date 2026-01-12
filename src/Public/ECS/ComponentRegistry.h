@@ -7,20 +7,28 @@
 
 #include <flecs.h>
 
-#include "ECS/Components/ReplicatedComponent.h"
+#include "ReplicatedComponent.h"
 #include "Utils/Hash.h"
 
-namespace fc::Network::Server
+namespace fc::ECS
 {
 
-class ReplicatedComponentRegistry
+class ComponentRegistry
 {
 public:
-    ReplicatedComponentRegistry(flecs::world& ecs) : mEcs(ecs) {}
+    ComponentRegistry(flecs::world& ecs) : mEcs(ecs) {}
 
     template<typename T>
-    void RegisterComponent(const std::string& name)
+    flecs::component<T> RegisterComponent()
     {
+        return mEcs.component<T>();
+    }
+
+    template<typename T>
+    flecs::component<T> RegisterReplicatedComponent(const std::string& name)
+    {
+        flecs::component<T> type = this->RegisterComponent<T>();
+
         ComponentSchema schema(name);
         schema.mComponentId = mEcs.id<T>();
         schema.mSize = sizeof(T);
@@ -31,24 +39,8 @@ public:
         mComponents.insert(schema.mComponentId);
 
         this->InitComponentObserver<T>();
-    }
 
-    void InitEntityObservers(flecs::world& ecs)
-    {
-        ecs.observer<ReplicatedComponent>()
-            .event(flecs::OnAdd)
-            .each([](flecs::entity e, ReplicatedComponent& rep)
-            {
-                rep.mDirty = true;
-                rep.mNewlyCreated = true;
-            });
-
-        ecs.observer<ReplicatedComponent>()
-            .event(flecs::OnRemove)
-            .each([this](flecs::entity e, ReplicatedComponent& rep)
-            {
-                mDestructionQueue.push(e.id());
-            });
+        return type;
     }
 
 private:
@@ -75,6 +67,24 @@ private:
     std::unordered_set<flecs::id_t> mComponents;
 
     std::queue<uint64_t> mDestructionQueue;
+
+    void InitEntityObservers()
+    {
+        mEcs.observer<ReplicatedComponent>()
+            .event(flecs::OnAdd)
+            .each([](flecs::entity e, ReplicatedComponent& rep)
+            {
+                rep.mDirty = true;
+                rep.mNewlyCreated = true;
+            });
+
+        mEcs.observer<ReplicatedComponent>()
+            .event(flecs::OnRemove)
+            .each([this](flecs::entity e, ReplicatedComponent& rep)
+            {
+                mDestructionQueue.push(e.id());
+            });
+    }
 
     template<typename T>
     void InitComponentObserver()
@@ -109,4 +119,4 @@ private:
     }
 };
 
-} // namespace fc::Network::Server
+} // namespace fc::ECS

@@ -4,12 +4,13 @@
 #include <raylib.h>
 #include <spdlog/spdlog.h>
 
+#include "ECS/ComponentRegistry.h"
+#include "ECS/ReplicatedComponent.h"
+
 #include "ECS/Components/CameraComponent.h"
 #include "ECS/Components/PositionComponent.h"
-#include "ECS/Components/ReplicatedComponent.h"
 #include "ECS/Components/TextComponent.h"
 #include "ECS/Phases.h"
-#include "Network/Replication.h"
 
 namespace fc::Core
 {
@@ -17,20 +18,14 @@ namespace fc::Core
 flecs::system gPreDrawSystem;
 flecs::system gEndDrawSystem;
 
-Network::Server::ReplicatedComponentRegistry* gReplicatedComponentRegistry;
-
-static void RegisterComponents(flecs::world& ecs)
+static void RegisterComponents(ECS::ComponentRegistry& registry)
 {
-    gReplicatedComponentRegistry = new Network::Server::ReplicatedComponentRegistry(ecs);
+    registry.RegisterComponent<ReplicatedComponent>();
 
-    ecs.component<PositionComponent>();
-    ecs.component<ReplicatedComponent>();
-    ecs.component<TextComponent>();
+    registry.RegisterComponent<CameraComponent>().add(flecs::Singleton);
 
-    ecs.component<CameraComponent>().add(flecs::Singleton);
-
-    gReplicatedComponentRegistry->RegisterComponent<PositionComponent>("PositionComponent");
-    gReplicatedComponentRegistry->RegisterComponent<TextComponent>("TextComponent");
+    registry.RegisterReplicatedComponent<PositionComponent>("PositionComponent");
+    registry.RegisterReplicatedComponent<TextComponent>("TextComponent");
 }
 
 static void InitCommonECS(flecs::world& ecs)
@@ -40,10 +35,9 @@ static void InitCommonECS(flecs::world& ecs)
 
 static void InitServerECS(flecs::world& ecs)
 {
-    gReplicatedComponentRegistry->InitEntityObservers(ecs);
-
     flecs::entity replicatedEntity = ecs.entity().set<ReplicatedComponent>({});
     replicatedEntity.set<PositionComponent>({100, 100, 0});
+    replicatedEntity.set<TextComponent>("Hello world");
 }
 
 static void InitClientECS(flecs::world& ecs)
@@ -110,7 +104,6 @@ static void InitClientECS(flecs::world& ecs)
 
 static void Cleanup(flecs::world& ecs)
 {
-    delete gReplicatedComponentRegistry;
 }
 
 fc::Module MODULE{

@@ -6,7 +6,7 @@ namespace fc::Utils
 {
 
 /// @brief FNV-1a hash function
-uint32_t HashString(const std::string& str)
+inline uint32_t HashString(const std::string& str)
 {
     uint32_t hash = 2166136261u;
     for (char c : str)
