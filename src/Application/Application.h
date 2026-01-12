@@ -27,7 +27,7 @@ public:
 private:
     bool mShouldQuit{false};
 
-    flecs::world mWorld;
+    flecs::world mEcs;
 
     Application() {}
 

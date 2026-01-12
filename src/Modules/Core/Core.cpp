@@ -17,20 +17,20 @@ namespace fc::Core
 flecs::system gPreDrawSystem;
 flecs::system gEndDrawSystem;
 
+Network::Server::ReplicatedComponentRegistry* gReplicatedComponentRegistry;
+
 static void RegisterComponents(flecs::world& ecs)
 {
-    ecs.component<CameraComponent>();
+    gReplicatedComponentRegistry = new Network::Server::ReplicatedComponentRegistry(ecs);
+
     ecs.component<PositionComponent>();
     ecs.component<ReplicatedComponent>();
     ecs.component<TextComponent>();
 
-    ecs.component<Network::Server::ReplicationRegistrySingleton>().add(flecs::Singleton);
-    ecs.component<Network::Server::ReplicationDestructionSingleton>().add(flecs::Singleton);
+    ecs.component<CameraComponent>().add(flecs::Singleton);
 
-    Network::Server::ReplicationRegistrySingleton& registry = ecs.get_mut<Network::Server::ReplicationRegistrySingleton>();
-
-    registry.RegisterComponent<PositionComponent>("PositionComponent", ecs);
-    registry.RegisterComponent<TextComponent>("TextComponent", ecs);
+    gReplicatedComponentRegistry->RegisterComponent<PositionComponent>("PositionComponent");
+    gReplicatedComponentRegistry->RegisterComponent<TextComponent>("TextComponent");
 }
 
 static void InitCommonECS(flecs::world& ecs)
@@ -40,7 +40,10 @@ static void InitCommonECS(flecs::world& ecs)
 
 static void InitServerECS(flecs::world& ecs)
 {
-    Network::Server::InitEntityObservers(ecs);
+    gReplicatedComponentRegistry->InitEntityObservers(ecs);
+
+    flecs::entity replicatedEntity = ecs.entity().set<ReplicatedComponent>({});
+    replicatedEntity.set<PositionComponent>({100, 100, 0});
 }
 
 static void InitClientECS(flecs::world& ecs)
@@ -60,12 +63,11 @@ static void InitClientECS(flecs::world& ecs)
 
     flecs::entity text = ecs.entity()
                              .set<PositionComponent>({300, 300, 0})
-                             .set<TextComponent>({});
+                             .set<TextComponent>("");
 
     // Systems
     gPreDrawSystem = ecs.system<CameraComponent>()
                          .kind(fc::PreDraw)
-                         .term_at(0)
                          .each([](CameraComponent &camera) {
                              if (IsCursorHidden())
                              {
@@ -106,6 +108,17 @@ static void InitClientECS(flecs::world& ecs)
     gEndDrawSystem = ecs.system().kind(fc::PostDraw).each([]() { EndDrawing(); });
 }
 
-fc::Module MODULE{&RegisterComponents, &InitCommonECS, &InitServerECS, &InitClientECS};
+static void Cleanup(flecs::world& ecs)
+{
+    delete gReplicatedComponentRegistry;
+}
+
+fc::Module MODULE{
+    &RegisterComponents,
+    &InitCommonECS,
+    &InitServerECS,
+    &InitClientECS,
+    &Cleanup
+};
 
 };  // namespace fc::Core

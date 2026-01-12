@@ -1,32 +1,49 @@
 #pragma once
 
-#include <unordered_set>
-
 #include <flecs.h>
 
 /// @brief Component for designating an entity as replicated.
 struct ReplicatedComponent
 {
     bool mDirty = true;
-    std::unordered_set<flecs::id_t> mDirtyComponents;
+    static constexpr size_t MAX_DIRTY_COMPONENTS = 64;
+    flecs::id_t mDirtyComponents[MAX_DIRTY_COMPONENTS];
+    size_t mDirtyComponentCount = 0;
     float mLastReplicatedTime{0};
     bool mNewlyCreated = true;
 
     void MarkDirty(flecs::id_t componentId)
     {
         mDirty = true;
-        mDirtyComponents.insert(componentId);
+        for (size_t i = 0; i < mDirtyComponentCount; ++i)
+        {
+            if (mDirtyComponents[i] == componentId)
+                return;
+        }
+
+        if (mDirtyComponentCount < MAX_DIRTY_COMPONENTS)
+        {
+            mDirtyComponents[mDirtyComponentCount++] = componentId;
+        }
     }
 
     void ClearDirty()
     {
         mDirty = false;
-        mDirtyComponents.clear();
+        mDirtyComponentCount = 0;
         mNewlyCreated = false;
     }
 
     bool IsComponentDirty(flecs::id_t componentId) const
     {
-        return mNewlyCreated || mDirtyComponents.count(componentId) > 0;
+        if (mNewlyCreated) return true;
+        
+        for (size_t i = 0; i < mDirtyComponentCount; ++i)
+        {
+            if (mDirtyComponents[i] == componentId)
+                return true;
+        }
+
+        return false;
     }
 };

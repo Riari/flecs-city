@@ -20,7 +20,7 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
     spdlog::info("Registering components...");
     for (auto module : modules)
     {
-        module.RegisterComponents(mWorld);
+        module.RegisterComponents(mEcs);
     }
 
     int status;
@@ -40,6 +40,11 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
         status = RunAsMonolith(options, modules);
     }
 
+    for (auto module : modules)
+    {
+        module.Cleanup(mEcs);
+    }
+
     return status;
 }
 
@@ -52,14 +57,14 @@ int Application::RunAsServer(fc::Environment::Options& options, std::vector<Modu
     spdlog::info("Initialising ECS...");
     for (auto module : modules)
     {
-        module.InitCommonECS(mWorld);
-        module.InitServerECS(mWorld);
+        module.InitCommonECS(mEcs);
+        module.InitServerECS(mEcs);
     }
 
     spdlog::info("Entering main loop...");
     while (!mShouldQuit)
     {
-        mWorld.progress();
+        mEcs.progress();
     }
 
     return 0;
@@ -80,14 +85,14 @@ int Application::RunAsClient(fc::Environment::Options& options, std::vector<Modu
     spdlog::info("Initialising ECS...");
     for (auto module : modules)
     {
-        module.InitCommonECS(mWorld);
-        module.InitClientECS(mWorld);
+        module.InitCommonECS(mEcs);
+        module.InitClientECS(mEcs);
     }
 
     spdlog::info("Entering main loop...");
     while (!WindowShouldClose())
     {
-        mWorld.progress();
+        mEcs.progress();
     }
 
     CloseWindow();
@@ -103,15 +108,15 @@ int Application::RunAsMonolith(fc::Environment::Options& options, std::vector<Mo
     spdlog::info("Initialising ECS...");
     for (auto module : modules)
     {
-        module.InitCommonECS(mWorld);
-        module.InitServerECS(mWorld);
-        module.InitClientECS(mWorld);
+        module.InitCommonECS(mEcs);
+        module.InitServerECS(mEcs);
+        module.InitClientECS(mEcs);
     }
 
     spdlog::info("Entering main loop...");
     while (!WindowShouldClose())
     {
-        mWorld.progress();
+        mEcs.progress();
     }
 
     CloseWindow();

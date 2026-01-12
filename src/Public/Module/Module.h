@@ -8,7 +8,7 @@ namespace fc
 /// @brief Function pointers for initialising a module.
 struct Module
 {
-    /// @brief For registering ECS components. Called for all modules before @c InitECS.
+    /// @brief For registering ECS components. Called for all modules before the Init* functions below.
     /// @param ecs The flecs world.
     void (*RegisterComponents)(flecs::world& ecs);
 
@@ -23,6 +23,10 @@ struct Module
     /// @brief For initialising client-side ECS entities (including systems/queries).
     /// @param ecs The flecs world.
     void (*InitClientECS)(flecs::world& ecs);
+
+    /// @brief For carrying out any necessary module cleanup when shutting down.
+    /// @param ecs The flecs world.
+    void (*Cleanup)(flecs::world& ecs);
 };
 
 }; // namespace fc
