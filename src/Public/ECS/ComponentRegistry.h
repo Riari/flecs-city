@@ -13,6 +13,22 @@
 namespace fc::ECS
 {
 
+struct ComponentSchema
+{
+    flecs::id_t mComponentId;
+    size_t mSize;
+    static constexpr size_t MAX_NAME_LENGTH = 128;
+    char mName[MAX_NAME_LENGTH];
+    uint32_t mTypeHash;
+
+    ComponentSchema() = default;
+    ComponentSchema(const std::string& name)
+    {
+        strncpy(mName, name.c_str(), MAX_NAME_LENGTH - 1);
+        mName[MAX_NAME_LENGTH - 1] = '\0';
+    }
+};
+
 class ComponentRegistry
 {
 public:
@@ -43,23 +59,12 @@ public:
         return type;
     }
 
-private:
-    struct ComponentSchema
+    ComponentSchema GetSchema(const flecs::id_t componentId)
     {
-        flecs::id_t mComponentId;
-        size_t mSize;
-        static constexpr size_t MAX_NAME_LENGTH = 128;
-        char mName[MAX_NAME_LENGTH];
-        uint32_t mTypeHash;
+        return mIdToSchema[componentId];
+    }
 
-        ComponentSchema() = default;
-        ComponentSchema(const std::string& name)
-        {
-            strncpy(mName, name.c_str(), MAX_NAME_LENGTH - 1);
-            mName[MAX_NAME_LENGTH - 1] = '\0';
-        }
-    };
-
+private:
     flecs::world& mEcs;
 
     std::unordered_map<flecs::id_t, ComponentSchema> mIdToSchema;
@@ -94,7 +99,7 @@ private:
             .each([](flecs::entity e, T& component, ReplicatedComponent& rep)
             {
                 // Don't mark as dirty if the entity is new - that case is handled by the
-                // lifecycle OnAdd observer (see below)
+                // entity OnAdd observer (see InitEntityObservers above)
                 if (!rep.mNewlyCreated)
                 {
                     rep.MarkDirty(e.world().id<T>());

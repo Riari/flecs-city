@@ -18,14 +18,14 @@ namespace fc::Core
 flecs::system gPreDrawSystem;
 flecs::system gEndDrawSystem;
 
-static void RegisterComponents(ECS::ComponentRegistry& registry)
+static void RegisterComponents(ECS::ComponentRegistry* registry)
 {
-    registry.RegisterComponent<ReplicatedComponent>();
+    registry->RegisterComponent<ReplicatedComponent>();
 
-    registry.RegisterComponent<CameraComponent>().add(flecs::Singleton);
+    registry->RegisterComponent<CameraComponent>().add(flecs::Singleton);
 
-    registry.RegisterReplicatedComponent<PositionComponent>("PositionComponent");
-    registry.RegisterReplicatedComponent<TextComponent>("TextComponent");
+    registry->RegisterReplicatedComponent<PositionComponent>("PositionComponent");
+    registry->RegisterReplicatedComponent<TextComponent>("TextComponent");
 }
 
 static void InitCommonECS(flecs::world& ecs)

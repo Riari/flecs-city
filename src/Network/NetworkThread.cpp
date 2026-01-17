@@ -35,13 +35,13 @@ void NetworkThread::Stop()
     }
 }
 
-void NetworkThread::QueueMessage(const std::string& data, ENetPeer* peer, uint32_t channel, uint32_t flags)
+void NetworkThread::QueueMessage(const std::string& data, ENetPeer* peer, Channel channel, uint32_t flags)
 {
     const std::vector<uint8_t> vec(data.begin(), data.end());
     QueueMessage(vec, peer, channel, flags);
 }
 
-void NetworkThread::QueueMessage(const std::vector<uint8_t>& data, ENetPeer* peer, uint32_t channel, uint32_t flags)
+void NetworkThread::QueueMessage(const std::vector<uint8_t>& data, ENetPeer* peer, Channel channel, uint32_t flags)
 {
     OutMessage message
     {
@@ -79,8 +79,9 @@ void NetworkThread::Main()
         }
 
         ProcessOutgoingMessages();
+        Update();
 
-        int result = enet_host_service(mHost, &event, 1000);
+        int result = enet_host_service(mHost, &event, 16);
         if (result > 0)
         {
             HandleEvent(event);
@@ -90,10 +91,6 @@ void NetworkThread::Main()
             spdlog::error("An ENet service error occurred");
             break;
         }
-
-        // Small yield to prevent busy waiting
-        // TODO: replace with a more suitable alternative (CV?)
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         state = mState.load();
     }
@@ -137,14 +134,28 @@ void NetworkThread::HandleEvent(const ENetEvent& event)
     {
         case ENET_EVENT_TYPE_RECEIVE:
             {
-                std::vector<uint8_t> data(event.packet->data, event.packet->data + event.packet->dataLength);
-
-                std::string msg(data.begin(), data.end());
-                spdlog::info("Queuing incoming message: {}", msg);
-
+                switch (event.channelID)
                 {
-                    std::lock_guard<std::mutex> lock(mIncomingMutex);
-                    mIncomingMessages.push({std::move(data), event.channelID});
+                    case Channel::General:
+                    {
+                        std::vector<uint8_t> data(event.packet->data, event.packet->data + event.packet->dataLength);
+
+                        std::string msg(data.begin(), data.end());
+                        spdlog::info("Queuing incoming message: {}", msg);
+
+                        {
+                            std::lock_guard<std::mutex> lock(mIncomingMutex);
+                            mIncomingMessages.push({std::move(data), event.channelID});
+                        }
+
+                        break;
+                    }
+                    case Channel::Replication:
+                    {
+                        spdlog::info("Replication message received");
+
+                        break;
+                    }
                 }
 
                 enet_packet_destroy(event.packet);

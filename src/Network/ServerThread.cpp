@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <cstdint>
+#include "Network/ReplicationPacket.h"
 
+#include <enet/enet.h>
 #include <spdlog/spdlog.h>
 
 namespace fc::Network
@@ -13,6 +15,11 @@ ServerThread::ServerThread(uint32_t listenPort)
 {
     mAddress.host = ENET_HOST_ANY;
     mAddress.port = listenPort;
+}
+
+void ServerThread::QueueReplicationPacket(const ReplicationPacket& packet)
+{
+    mReplicationQueue.push(packet);
 }
 
 bool ServerThread::Init()
@@ -45,7 +52,7 @@ void ServerThread::HandleEvent(const ENetEvent& event)
 
                 spdlog::info("Client connected from {}:{} (peer ID: {}). Total clients: {}.", hostStr, event.peer->address.port, event.peer->incomingPeerID, mConnectedPeers.size());
 
-                QueueMessage("Welcome", event.peer, 0, ENET_PACKET_FLAG_RELIABLE);
+                QueueMessage("Welcome", event.peer, Channel::General, ENET_PACKET_FLAG_RELIABLE);
             }
             break;
 
@@ -66,6 +73,33 @@ void ServerThread::HandleEvent(const ENetEvent& event)
 
         default:
             break;
+    }
+}
+
+void ServerThread::Update()
+{
+    spdlog::info("Replication queue size: {}", mReplicationQueue.size());
+    if (mConnectedPeers.empty()) return;
+
+    ProcessReplicationQueue();
+}
+
+void ServerThread::ProcessReplicationQueue()
+{
+    std::lock_guard<std::mutex> lock(mReplicationMutex);
+
+    while (!mReplicationQueue.empty())
+    {
+        ReplicationPacket& packet = mReplicationQueue.front();
+
+        std::vector<uint8_t> buffer = packet.Serialize();
+
+        for (ENetPeer* peer : mConnectedPeers)
+        {
+            QueueMessage(buffer, peer, Channel::Replication, ENET_PACKET_FLAG_UNSEQUENCED);
+        }
+
+        mReplicationQueue.pop();
     }
 }
 

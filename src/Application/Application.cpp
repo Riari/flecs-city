@@ -3,10 +3,9 @@
 #include <enet/enet.h>
 #include <raylib.h>
 
-#include "ECS/ComponentRegistry.h"
 #include "Logging/Utils.h"
 #include "Network/ClientThread.h"
-#include "Network/ServerThread.h"
+#include "Network/ReplicationPacket.h"
 
 namespace fc
 {
@@ -14,16 +13,24 @@ namespace fc
 constexpr int DEFAULT_WINDOW_WIDTH{800};
 constexpr int DEFAULT_WINDOW_HEIGHT{600};
 
+Application::Application()
+{
+    mComponentRegistry = new ECS::ComponentRegistry(mEcs);
+}
+
+Application::~Application()
+{
+    delete mComponentRegistry;
+}
+
 int Application::Run(fc::Environment::Options& options, std::vector<Module>& modules)
 {
     fc::Logging::Initialise();
 
-    ECS::ComponentRegistry componentRegistry(mEcs);
-
     spdlog::info("Registering components...");
     for (auto module : modules)
     {
-        module.RegisterComponents(componentRegistry);
+        module.RegisterComponents(mComponentRegistry);
     }
 
     int status;
@@ -68,6 +75,7 @@ int Application::RunAsServer(fc::Environment::Options& options, std::vector<Modu
     while (!mShouldQuit)
     {
         mEcs.progress();
+        UpdateReplication(serverThread);
     }
 
     return 0;
@@ -125,6 +133,39 @@ int Application::RunAsMonolith(fc::Environment::Options& options, std::vector<Mo
     CloseWindow();
 
     return 0;
+}
+
+void Application::UpdateReplication(fc::Network::ServerThread& serverThread)
+{
+    mEcs.each<ReplicatedComponent>([&](flecs::entity e, ReplicatedComponent& rep)
+    {
+        if (!rep.mDirty) return;
+
+        Network::ReplicationPacket packet;
+        packet.mEntityId = e.id();
+        packet.mIsNewEntity = rep.mNewlyCreated;
+
+        for (size_t i = 0; i < rep.mDirtyComponentCount; ++i)
+        {
+            flecs::id_t componentId = rep.mDirtyComponents[i];
+
+            auto schema = mComponentRegistry->GetSchema(componentId);
+
+            const void* componentData = e.get(componentId);
+
+            if (componentData)
+            {
+                Network::ReplicationPacket::ComponentData compData;
+                compData.mTypeHash = schema.mTypeHash;
+                const uint8_t* dataPtr = static_cast<const uint8_t*>(componentData);
+                compData.mData.assign(dataPtr, dataPtr + schema.mSize);
+                packet.mComponents.push_back(std::move(compData));
+            }
+        }
+
+        serverThread.QueueReplicationPacket(packet);
+        rep.ClearDirty();
+    });
 }
 
 }  // namespace fc

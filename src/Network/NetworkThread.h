@@ -13,6 +13,12 @@
 namespace fc::Network
 {
 
+enum Channel : uint8_t
+{
+    General = 0,
+    Replication = 1
+};
+
 class NetworkThread
 {
 public:
@@ -45,11 +51,12 @@ protected:
     std::queue<InMessage> mIncomingMessages;
     std::queue<OutMessage> mOutgoingMessages;
 
-    void QueueMessage(const std::string& data, ENetPeer* peer, uint32_t channel, uint32_t flags);
-    void QueueMessage(const std::vector<uint8_t>& data, ENetPeer* peer, uint32_t channel, uint32_t flags);
+    void QueueMessage(const std::string& data, ENetPeer* peer, Channel channel, uint32_t flags);
+    void QueueMessage(const std::vector<uint8_t>& data, ENetPeer* peer, Channel channel, uint32_t flags);
 
     virtual bool Init() = 0;
     virtual void HandleEvent(const ENetEvent& event);
+    virtual void Update() {}
     virtual void Disconnect() {}
 
 private:

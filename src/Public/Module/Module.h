@@ -12,7 +12,7 @@ struct Module
 {
     /// @brief For registering ECS components. Called for all modules before the Init* functions below.
     /// @param registry The component registry to use.
-    void (*RegisterComponents)(ECS::ComponentRegistry& registry);
+    void (*RegisterComponents)(ECS::ComponentRegistry* registry);
 
     /// @brief For initialising common ECS entities (including systems/queries).
     /// @param ecs The flecs world.
