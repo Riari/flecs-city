@@ -7,7 +7,6 @@ target_link_libraries(CoreDependencies
     flecs::flecs
     glfw
     raylib
-    spdlog::spdlog
     unofficial::enet::enet
 )
 

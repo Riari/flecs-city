@@ -3,14 +3,19 @@
 #include <cstdint>
 #include <vector>
 
+#include <enet/enet.h>
+
 namespace fc::Network
 {
 
 struct ReplicationPacket
 {
+    // Serialized fields
     uint64_t mEntityId;
     bool mIsNewEntity;
     bool mIsDestroyed;
+
+    ENetPeer* mRecipient;
 
     struct ComponentData
     {
@@ -95,6 +100,5 @@ struct ReplicationPacket
         return packet;
     }
 };
-
 
 } // namespace fc::Network

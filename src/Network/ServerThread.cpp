@@ -19,6 +19,7 @@ ServerThread::ServerThread(uint32_t listenPort)
 
 void ServerThread::QueueReplicationPacket(const ReplicationPacket& packet)
 {
+    std::lock_guard<std::mutex> lock(mReplicationMutex);
     mReplicationQueue.push(packet);
 }
 
@@ -78,9 +79,6 @@ void ServerThread::HandleEvent(const ENetEvent& event)
 
 void ServerThread::Update()
 {
-    spdlog::info("Replication queue size: {}", mReplicationQueue.size());
-    if (mConnectedPeers.empty()) return;
-
     ProcessReplicationQueue();
 }
 
@@ -94,9 +92,16 @@ void ServerThread::ProcessReplicationQueue()
 
         std::vector<uint8_t> buffer = packet.Serialize();
 
-        for (ENetPeer* peer : mConnectedPeers)
+        if (packet.mRecipient != nullptr)
         {
-            QueueMessage(buffer, peer, Channel::Replication, ENET_PACKET_FLAG_UNSEQUENCED);
+            QueueMessage(buffer, packet.mRecipient, Channel::Replication, ENET_PACKET_FLAG_UNSEQUENCED);
+        }
+        else
+        {
+            for (ENetPeer* peer : mConnectedPeers)
+            {
+                QueueMessage(buffer, peer, Channel::Replication, ENET_PACKET_FLAG_UNSEQUENCED);
+            }
         }
 
         mReplicationQueue.pop();

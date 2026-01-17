@@ -139,11 +139,11 @@ void Application::UpdateReplication(fc::Network::ServerThread& serverThread)
 {
     mEcs.each<ReplicatedComponent>([&](flecs::entity e, ReplicatedComponent& rep)
     {
-        if (!rep.mDirty) return;
+        if (!rep.mIsDirty) return;
 
         Network::ReplicationPacket packet;
         packet.mEntityId = e.id();
-        packet.mIsNewEntity = rep.mNewlyCreated;
+        packet.mIsNewEntity = rep.mIsNewEntity;
 
         for (size_t i = 0; i < rep.mDirtyComponentCount; ++i)
         {

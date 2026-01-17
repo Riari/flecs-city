@@ -5,16 +5,16 @@
 /// @brief Component for designating an entity as replicated.
 struct ReplicatedComponent
 {
-    bool mDirty = true;
+    bool mIsDirty = true;
     static constexpr size_t MAX_DIRTY_COMPONENTS = 64;
     flecs::id_t mDirtyComponents[MAX_DIRTY_COMPONENTS];
     size_t mDirtyComponentCount = 0;
     float mLastReplicatedTime{0};
-    bool mNewlyCreated = true;
+    bool mIsNewEntity = true;
 
     void MarkDirty(flecs::id_t componentId)
     {
-        mDirty = true;
+        mIsDirty = true;
         for (size_t i = 0; i < mDirtyComponentCount; ++i)
         {
             if (mDirtyComponents[i] == componentId)
@@ -29,15 +29,15 @@ struct ReplicatedComponent
 
     void ClearDirty()
     {
-        mDirty = false;
+        mIsDirty = false;
         mDirtyComponentCount = 0;
-        mNewlyCreated = false;
+        mIsNewEntity = false;
     }
 
     bool IsComponentDirty(flecs::id_t componentId) const
     {
-        if (mNewlyCreated) return true;
-        
+        if (mIsNewEntity) return true;
+
         for (size_t i = 0; i < mDirtyComponentCount; ++i)
         {
             if (mDirtyComponents[i] == componentId)

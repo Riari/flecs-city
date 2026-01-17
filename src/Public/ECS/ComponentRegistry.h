@@ -79,8 +79,8 @@ private:
             .event(flecs::OnAdd)
             .each([](flecs::entity e, ReplicatedComponent& rep)
             {
-                rep.mDirty = true;
-                rep.mNewlyCreated = true;
+                rep.mIsDirty = true;
+                rep.mIsNewEntity = true;
             });
 
         mEcs.observer<ReplicatedComponent>()
@@ -100,7 +100,7 @@ private:
             {
                 // Don't mark as dirty if the entity is new - that case is handled by the
                 // entity OnAdd observer (see InitEntityObservers above)
-                if (!rep.mNewlyCreated)
+                if (!rep.mIsNewEntity)
                 {
                     rep.MarkDirty(e.world().id<T>());
                 }
@@ -119,7 +119,7 @@ private:
             {
                 // Mark the entity as dirty so the removal can be replicated without
                 // sending the component data
-                rep.mDirty = true;
+                rep.mIsDirty = true;
             });
     }
 };

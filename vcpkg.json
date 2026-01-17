@@ -8,6 +8,9 @@
     },
     "glfw3",
     "raylib",
-    "spdlog"
+    {
+      "name": "spdlog",
+      "version>=": "1.17.0"
+    }
   ]
 }

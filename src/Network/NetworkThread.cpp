@@ -1,7 +1,5 @@
 #include "NetworkThread.h"
 
-#include <chrono>
-
 #include <enet/enet.h>
 #include <spdlog/spdlog.h>
 
@@ -133,33 +131,33 @@ void NetworkThread::HandleEvent(const ENetEvent& event)
     switch (event.type)
     {
         case ENET_EVENT_TYPE_RECEIVE:
+        {
+            switch (event.channelID)
             {
-                switch (event.channelID)
+                case Channel::General:
                 {
-                    case Channel::General:
+                    std::vector<uint8_t> data(event.packet->data, event.packet->data + event.packet->dataLength);
+
+                    std::string msg(data.begin(), data.end());
+                    spdlog::info("Queuing incoming message: {}", msg);
+
                     {
-                        std::vector<uint8_t> data(event.packet->data, event.packet->data + event.packet->dataLength);
-
-                        std::string msg(data.begin(), data.end());
-                        spdlog::info("Queuing incoming message: {}", msg);
-
-                        {
-                            std::lock_guard<std::mutex> lock(mIncomingMutex);
-                            mIncomingMessages.push({std::move(data), event.channelID});
-                        }
-
-                        break;
+                        std::lock_guard<std::mutex> lock(mIncomingMutex);
+                        mIncomingMessages.push({std::move(data), event.channelID});
                     }
-                    case Channel::Replication:
-                    {
-                        spdlog::info("Replication message received");
 
-                        break;
-                    }
+                    break;
                 }
+                case Channel::Replication:
+                {
+                    spdlog::info("Replication message received");
 
-                enet_packet_destroy(event.packet);
+                    break;
+                }
             }
+
+            enet_packet_destroy(event.packet);
+        }
 
         default:
             break;
