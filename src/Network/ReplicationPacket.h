@@ -4,6 +4,10 @@
 #include <vector>
 
 #include <enet/enet.h>
+#include <flecs.h>
+
+#include "ECS/ReplicatedComponent.h"
+#include "ECS/ComponentRegistry.h"
 
 namespace fc::Network
 {
@@ -15,7 +19,7 @@ struct ReplicationPacket
     bool mIsNewEntity;
     bool mIsDestroyed;
 
-    ENetPeer* mRecipient;
+    ENetPeer* mRecipient = nullptr;
 
     struct ComponentData
     {
@@ -30,8 +34,7 @@ struct ReplicationPacket
         std::vector<uint8_t> buffer;
         buffer.reserve(256);
 
-        auto Write = [&buffer](const void* data, size_t size)
-        {
+        auto Write = [&buffer](const void* data, size_t size) {
             const uint8_t* bytes = static_cast<const uint8_t*>(data);
             buffer.insert(buffer.end(), bytes, bytes + size);
         };
@@ -64,8 +67,7 @@ struct ReplicationPacket
         ReplicationPacket packet;
         size_t offset = 0;
 
-        auto Read = [&buffer, &offset](void* dest, size_t size)
-        {
+        auto Read = [&buffer, &offset](void* dest, size_t size) {
             memcpy(dest, buffer.data() + offset, size);
             offset += size;
         };
@@ -101,4 +103,27 @@ struct ReplicationPacket
     }
 };
 
-} // namespace fc::Network
+inline ReplicationPacket GenerateReplicationPacket(flecs::entity e, const ReplicatedComponent& rep, const std::vector<flecs::id_t>& componentIds, const fc::ECS::ComponentRegistry* registry)
+{
+    Network::ReplicationPacket packet;
+    packet.mEntityId = e.id();
+    packet.mIsNewEntity = rep.mIsNewEntity;
+
+    for (flecs::id_t componentId : componentIds)
+    {
+        auto schema = registry->GetSchema(componentId);
+        const void* componentData = e.get(componentId);
+        if (componentData)
+        {
+            Network::ReplicationPacket::ComponentData compData;
+            compData.mTypeHash = schema.mTypeHash;
+            const uint8_t* dataPtr = static_cast<const uint8_t*>(componentData);
+            compData.mData.assign(dataPtr, dataPtr + schema.mSize);
+            packet.mComponents.push_back(std::move(compData));
+        }
+    }
+
+    return packet;
+}
+
+}  // namespace fc::Network

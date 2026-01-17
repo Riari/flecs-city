@@ -19,6 +19,18 @@ enum Channel : uint8_t
     Replication = 1
 };
 
+struct Event
+{
+    enum Type
+    {
+        PeerConnect,
+        PeerDisconnect
+    };
+
+    Type mType;
+    ENetPeer* mPeer;
+};
+
 class NetworkThread
 {
 public:
@@ -34,6 +46,8 @@ public:
 
     bool Start();
     void Stop();
+
+    bool PollEvent(Event& outEvent);
 
 protected:
     std::thread mThread;
@@ -60,6 +74,9 @@ protected:
     virtual void Disconnect() {}
 
 private:
+    std::mutex mEventMutex;
+    std::queue<Event> mEventQueue;
+
     /// @brief Thread function
     void Main();
 

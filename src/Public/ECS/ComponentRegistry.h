@@ -59,9 +59,14 @@ public:
         return type;
     }
 
-    ComponentSchema GetSchema(const flecs::id_t componentId)
+    const std::unordered_set<flecs::id_t>& GetReplicatedComponents() const
     {
-        return mIdToSchema[componentId];
+        return mComponents;
+    }
+
+    const ComponentSchema& GetSchema(const flecs::id_t componentId) const
+    {
+        return mIdToSchema.at(componentId);
     }
 
 private:

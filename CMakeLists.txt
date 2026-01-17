@@ -39,6 +39,8 @@ set(USE_EXTERNAL_GLFW "ON" CACHE STRING "" FORCE)
 set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
 add_compile_definitions(SPDLOG_USE_STD_FORMAT)
 
+add_compile_definitions(NOMINMAX)
+
 find_package(args CONFIG REQUIRED)
 find_package(unofficial-enet CONFIG REQUIRED)
 find_package(flecs CONFIG REQUIRED)

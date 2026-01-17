@@ -33,6 +33,16 @@ void NetworkThread::Stop()
     }
 }
 
+bool NetworkThread::PollEvent(Event& outEvent)
+{
+    std::lock_guard<std::mutex> lock(mEventMutex);
+    if (mEventQueue.empty()) return false;
+
+    outEvent = mEventQueue.front();
+    mEventQueue.pop();
+    return true;
+}
+
 void NetworkThread::QueueMessage(const std::string& data, ENetPeer* peer, Channel channel, uint32_t flags)
 {
     const std::vector<uint8_t> vec(data.begin(), data.end());
@@ -130,6 +140,20 @@ void NetworkThread::HandleEvent(const ENetEvent& event)
 {
     switch (event.type)
     {
+        case ENET_EVENT_TYPE_CONNECT:
+        {
+            std::lock_guard<std::mutex> lock(mEventMutex);
+            mEventQueue.push({Event::Type::PeerConnect, event.peer});
+
+            break;
+        }
+        case ENET_EVENT_TYPE_DISCONNECT:
+        {
+            std::lock_guard<std::mutex> lock(mEventMutex);
+            mEventQueue.push({Event::Type::PeerDisconnect, event.peer});
+
+            break;
+        }
         case ENET_EVENT_TYPE_RECEIVE:
         {
             switch (event.channelID)
