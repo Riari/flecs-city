@@ -4,8 +4,10 @@
 
 #include <flecs.h>
 
+#include "ECS/ComponentRegistry.h"
 #include "Environment/Options.h"
 #include "Module/Module.h"
+#include "Network/ServerThread.h"
 
 namespace fc
 {
@@ -27,13 +29,17 @@ public:
 private:
     bool mShouldQuit{false};
 
-    flecs::world mWorld;
+    flecs::world mEcs;
+    ECS::ComponentRegistry* mComponentRegistry;
 
-    Application() {}
+    Application();
+    ~Application();
 
     int RunAsServer(fc::Environment::Options& options, std::vector<Module>& modules);
     int RunAsClient(fc::Environment::Options& options, std::vector<Module>& modules);
     int RunAsMonolith(fc::Environment::Options& options, std::vector<Module>& modules);
+
+    void UpdateReplication(fc::Network::ServerThread& serverThread);
 };
 
 }  // namespace fc

@@ -2,9 +2,15 @@
   "dependencies": [
     "args",
     "enet",
-    "flecs",
+    {
+      "name": "flecs",
+      "version>=": "4.1.1"
+    },
     "glfw3",
     "raylib",
-    "spdlog"
+    {
+      "name": "spdlog",
+      "version>=": "1.17.0"
+    }
   ]
 }

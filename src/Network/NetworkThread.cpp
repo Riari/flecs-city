@@ -1,7 +1,5 @@
 #include "NetworkThread.h"
 
-#include <chrono>
-
 #include <enet/enet.h>
 #include <spdlog/spdlog.h>
 
@@ -35,13 +33,23 @@ void NetworkThread::Stop()
     }
 }
 
-void NetworkThread::QueueMessage(const std::string& data, ENetPeer* peer, uint32_t channel, uint32_t flags)
+bool NetworkThread::PollEvent(Event& outEvent)
+{
+    std::lock_guard<std::mutex> lock(mEventMutex);
+    if (mEventQueue.empty()) return false;
+
+    outEvent = mEventQueue.front();
+    mEventQueue.pop();
+    return true;
+}
+
+void NetworkThread::QueueMessage(const std::string& data, ENetPeer* peer, Channel channel, uint32_t flags)
 {
     const std::vector<uint8_t> vec(data.begin(), data.end());
     QueueMessage(vec, peer, channel, flags);
 }
 
-void NetworkThread::QueueMessage(const std::vector<uint8_t>& data, ENetPeer* peer, uint32_t channel, uint32_t flags)
+void NetworkThread::QueueMessage(const std::vector<uint8_t>& data, ENetPeer* peer, Channel channel, uint32_t flags)
 {
     OutMessage message
     {
@@ -79,8 +87,9 @@ void NetworkThread::Main()
         }
 
         ProcessOutgoingMessages();
+        Update();
 
-        int result = enet_host_service(mHost, &event, 1000);
+        int result = enet_host_service(mHost, &event, 16);
         if (result > 0)
         {
             HandleEvent(event);
@@ -90,10 +99,6 @@ void NetworkThread::Main()
             spdlog::error("An ENet service error occurred");
             break;
         }
-
-        // Small yield to prevent busy waiting
-        // TODO: replace with a more suitable alternative (CV?)
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         state = mState.load();
     }
@@ -135,20 +140,42 @@ void NetworkThread::HandleEvent(const ENetEvent& event)
 {
     switch (event.type)
     {
+        case ENET_EVENT_TYPE_CONNECT:
+        {
+            std::lock_guard<std::mutex> lock(mEventMutex);
+            mEventQueue.push({Event::Type::PeerConnect, event.peer});
+
+            break;
+        }
+        case ENET_EVENT_TYPE_DISCONNECT:
+        {
+            std::lock_guard<std::mutex> lock(mEventMutex);
+            mEventQueue.push({Event::Type::PeerDisconnect, event.peer});
+
+            break;
+        }
         case ENET_EVENT_TYPE_RECEIVE:
+        {
+            switch (event.channelID)
             {
-                std::vector<uint8_t> data(event.packet->data, event.packet->data + event.packet->dataLength);
-
-                std::string msg(data.begin(), data.end());
-                spdlog::info("Queuing incoming message: {}", msg);
-
+                case Channel::General:
                 {
-                    std::lock_guard<std::mutex> lock(mIncomingMutex);
-                    mIncomingMessages.push({std::move(data), event.channelID});
-                }
+                    std::vector<uint8_t> data(event.packet->data, event.packet->data + event.packet->dataLength);
 
-                enet_packet_destroy(event.packet);
+                    std::string msg(data.begin(), data.end());
+                    spdlog::info("Queuing incoming message: {}", msg);
+
+                    {
+                        std::lock_guard<std::mutex> lock(mIncomingMutex);
+                        mIncomingMessages.push({std::move(data), event.channelID});
+                    }
+
+                    enet_packet_destroy(event.packet);
+
+                    break;
+                }
             }
+        }
 
         default:
             break;

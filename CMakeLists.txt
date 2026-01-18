@@ -12,7 +12,7 @@ project(
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -37,6 +37,9 @@ set(USE_EXTERNAL_GLFW "ON" CACHE STRING "" FORCE)
 
 # spdlog options
 set(SPDLOG_BUILD_SHARED ON CACHE BOOL "" FORCE)
+add_compile_definitions(SPDLOG_USE_STD_FORMAT)
+
+add_compile_definitions(NOMINMAX)
 
 find_package(args CONFIG REQUIRED)
 find_package(unofficial-enet CONFIG REQUIRED)
