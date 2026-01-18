@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
-#include "Network/ReplicationPacket.h"
+#include "Network/ReplicationRequest.h"
 
 #include <enet/enet.h>
 #include <spdlog/spdlog.h>
@@ -17,14 +17,32 @@ ServerThread::ServerThread(uint32_t listenPort)
     mAddress.port = listenPort;
 }
 
-void ServerThread::QueueReplicationPacket(const ReplicationPacket& packet)
+void ServerThread::QueueReplicationRequest(const ReplicationRequest& packet)
 {
     std::lock_guard<std::mutex> lock(mReplicationMutex);
     mReplicationQueue.push(packet);
 }
 
+std::vector<ENetPeer*> ServerThread::PopNewPeers()
+{
+    std::lock_guard<std::mutex> lock(mReplicationMutex);
+    std::vector<ENetPeer*> peers(mNewPeers.begin(), mNewPeers.end());
+    mNewPeers.clear();
+    return peers;
+}
+
+void ServerThread::SetClientReady(ENetPeer* peer)
+{
+    std::lock_guard<std::mutex> lock(mReplicationMutex);
+    mReadyPeers.insert(peer); 
+}
+
 bool ServerThread::Init()
 {
+    mConnectedPeers.clear();
+    mNewPeers.clear();
+    mReadyPeers.clear();
+
     mHost = enet_host_create(&mAddress, 32, 2, 0, 0);
     if (mHost == NULL)
     {
@@ -50,6 +68,11 @@ void ServerThread::HandleEvent(const ENetEvent& event)
                 enet_address_get_host_ip(&event.peer->address, hostStr, sizeof(hostStr));
 
                 mConnectedPeers.push_back(event.peer);
+                
+                {
+                    std::lock_guard<std::mutex> lock(mReplicationMutex);
+                    mNewPeers.insert(event.peer);
+                }
 
                 spdlog::info("Client connected from {}:{} (peer ID: {}). Total clients: {}.", hostStr, event.peer->address.port, event.peer->incomingPeerID, mConnectedPeers.size());
 
@@ -66,6 +89,12 @@ void ServerThread::HandleEvent(const ENetEvent& event)
                 if (it != mConnectedPeers.end())
                 {
                     mConnectedPeers.erase(it);
+                }
+
+                {
+                    std::lock_guard<std::mutex> lock(mReplicationMutex);
+                    mNewPeers.erase(event.peer);
+                    mReadyPeers.erase(event.peer);
                 }
 
                 spdlog::info("Client disconnected from {}:{} (peer ID: {}). Remaining clients: {}.", hostStr, event.peer->address.port, event.peer->incomingPeerID, mConnectedPeers.size());
@@ -88,17 +117,19 @@ void ServerThread::ProcessReplicationQueue()
 
     while (!mReplicationQueue.empty())
     {
-        ReplicationPacket& packet = mReplicationQueue.front();
+        ReplicationRequest& packet = mReplicationQueue.front();
 
         std::vector<uint8_t> buffer = packet.Serialize();
 
         if (packet.mRecipient != nullptr)
         {
             QueueMessage(buffer, packet.mRecipient, Channel::Replication, ENET_PACKET_FLAG_UNSEQUENCED);
+            mReadyPeers.insert(packet.mRecipient);
         }
         else
         {
-            for (ENetPeer* peer : mConnectedPeers)
+            // This is a broadcast - send to ready peers only
+            for (ENetPeer* peer : mReadyPeers)
             {
                 QueueMessage(buffer, peer, Channel::Replication, ENET_PACKET_FLAG_UNSEQUENCED);
             }

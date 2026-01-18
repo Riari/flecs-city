@@ -170,17 +170,11 @@ void NetworkThread::HandleEvent(const ENetEvent& event)
                         mIncomingMessages.push({std::move(data), event.channelID});
                     }
 
-                    break;
-                }
-                case Channel::Replication:
-                {
-                    spdlog::info("Replication message received");
+                    enet_packet_destroy(event.packet);
 
                     break;
                 }
             }
-
-            enet_packet_destroy(event.packet);
         }
 
         default:

@@ -5,6 +5,8 @@
 #include <enet/enet.h>
 #include <spdlog/spdlog.h>
 
+#include "ECS/ComponentRegistry.h"
+
 namespace fc::Network
 {
 
@@ -89,10 +91,94 @@ void ClientThread::HandleEvent(const ENetEvent& event)
     {
         case ENET_EVENT_TYPE_DISCONNECT:
             spdlog::info("Disconnected");
+            mState = State::Idle;
             break;
+
+        case ENET_EVENT_TYPE_RECEIVE:
+        {
+            switch (event.channelID)
+            {
+                case Channel::Replication:
+                {
+                    std::vector<uint8_t> data(event.packet->data, event.packet->data + event.packet->dataLength);
+                    auto request = ReplicationRequest::Deserialize(data);
+
+                    {
+                        std::lock_guard<std::mutex> lock(mReplicationMutex);
+                        mReplicationQueue.push(std::move(request));
+                    }
+
+                    enet_packet_destroy(event.packet);
+                    break;
+                }
+            }
+            break;
+        }
 
         default:
             break;
+    }
+}
+
+void ClientThread::ProcessReplicationQueue(fc::ECS::ComponentRegistry* registry)
+{
+    std::queue<ReplicationRequest> queue;
+    {
+        std::lock_guard<std::mutex> lock(mReplicationMutex);
+        queue.swap(mReplicationQueue);
+    }
+
+    auto& ecs = registry->GetWorld();
+
+    while (!queue.empty())
+    {
+        auto& req = queue.front();
+
+        flecs::entity e;
+
+        if (req.mIsNewEntity)
+        {
+            e = ecs.entity();
+            mServerToClientEntities[req.mEntityId] = e.id();
+        }
+        else
+        {
+            auto it = mServerToClientEntities.find(req.mEntityId);
+            if (it != mServerToClientEntities.end())
+            {
+                e = ecs.entity(it->second);
+            }
+            else
+            {
+                spdlog::error("Received replication request for unknown entity {}", req.mEntityId);
+            }
+        }
+
+        if (req.mIsDestroyed)
+        {
+            e.destruct();
+            mServerToClientEntities.erase(req.mEntityId);
+        }
+        else
+        {
+            for (const auto& compData : req.mComponents)
+            {
+                flecs::id_t compId = registry->GetComponentId(compData.mTypeHash);
+                if (compId != 0)
+                {
+                    const ECS::ComponentDescriptor& desc = registry->GetDescriptor(compId);
+                    if (compData.mData.size() == desc.mSize)
+                    {
+                        e.add(compId);
+                        void* ptr = e.get_mut(compId);
+                        memcpy(ptr, compData.mData.data(), desc.mSize);
+                        e.modified(compId);
+                    }
+                }
+            }
+        }
+
+        queue.pop();
     }
 }
 

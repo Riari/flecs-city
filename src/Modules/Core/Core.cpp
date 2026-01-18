@@ -2,6 +2,7 @@
 
 #include <flecs.h>
 #include <raylib.h>
+#include <chrono>
 #include <spdlog/spdlog.h>
 
 #include "ECS/ComponentRegistry.h"
@@ -36,8 +37,18 @@ static void InitCommonECS(flecs::world& ecs)
 static void InitServerECS(flecs::world& ecs)
 {
     flecs::entity replicatedEntity = ecs.entity().set<ReplicatedComponent>({});
-    replicatedEntity.set<PositionComponent>({100, 100, 0});
+    replicatedEntity.set<PositionComponent>({20, 20, 0});
     replicatedEntity.set<TextComponent>("Hello world");
+
+    static auto serverStartTime = std::chrono::steady_clock::now();
+    ecs.system<TextComponent>("UpdateText")
+        .each([](flecs::entity e, TextComponent& textComponent)
+        {
+            auto now = std::chrono::steady_clock::now();
+            int seconds = (int)std::chrono::duration_cast<std::chrono::seconds>(now - serverStartTime).count();
+            sprintf(textComponent.mText, "Time elapsed since server start: %ds", seconds);
+            e.modified<TextComponent>();
+        });
 }
 
 static void InitClientECS(flecs::world& ecs)
@@ -62,7 +73,7 @@ static void InitClientECS(flecs::world& ecs)
     // Systems
     gPreDrawSystem = ecs.system<CameraComponent>()
                          .kind(fc::PreDraw)
-                         .each([](CameraComponent &camera) {
+                         .each([](CameraComponent& camera) {
                              if (IsCursorHidden())
                              {
                                  UpdateCamera(&camera.mCamera, CAMERA_FREE);
@@ -79,25 +90,18 @@ static void InitClientECS(flecs::world& ecs)
 
     ecs.system<const CameraComponent>("BeginDraw3D")
         .kind(fc::Draw3D)
-        .each([&camera3D](const CameraComponent &camera) { BeginMode3D(camera.mCamera); });
+        .each([&camera3D](const CameraComponent& camera) { BeginMode3D(camera.mCamera); });
 
     ecs.system<const PositionComponent>("DrawCubes")
         .kind(fc::Draw3D)
-        .each([](const PositionComponent &position) { DrawCube(position.mPosition, 5.0, 5.0, 5.0, RED); });
+        .each([](const PositionComponent& position) { DrawCube(position.mPosition, 5.0, 5.0, 5.0, RED); });
 
     ecs.system("EndDraw3D").kind(fc::Draw3D).each([]() { EndMode3D(); });
 
-    ecs.system<const CameraComponent, const PositionComponent, const TextComponent>("DrawText")
+    ecs.system<const PositionComponent, const TextComponent>("DrawText")
         .kind(fc::Draw2D)
-        .term_at(0)
-        .each([](const CameraComponent &camera,
-                 const PositionComponent &position,
-                 const TextComponent &text) {
-            const Vector3 &cameraPos = camera.mCamera.position;
-            DrawText(TextFormat("Camera position: %f, %f, %f", cameraPos.x,
-                                cameraPos.y, cameraPos.z),
-                     static_cast<int>(position.mPosition.x),
-                     static_cast<int>(position.mPosition.y), 30.0, WHITE); });
+        .each([](const PositionComponent& position,
+                 const TextComponent& text) { DrawText(text.mText, static_cast<int>(position.mPosition.x), static_cast<int>(position.mPosition.y), 30.0, BLACK); });
 
     gEndDrawSystem = ecs.system().kind(fc::PostDraw).each([]() { EndDrawing(); });
 }
@@ -114,4 +118,4 @@ fc::Module MODULE{
     &Cleanup
 };
 
-};  // namespace fc::Core
+}; // namespace fc::Core

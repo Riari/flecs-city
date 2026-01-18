@@ -5,7 +5,7 @@
 
 #include "Logging/Utils.h"
 #include "Network/ClientThread.h"
-#include "Network/ReplicationPacket.h"
+#include "Network/ReplicationRequest.h"
 
 namespace fc
 {
@@ -103,6 +103,7 @@ int Application::RunAsClient(fc::Environment::Options& options, std::vector<Modu
     spdlog::info("Entering main loop...");
     while (!WindowShouldClose())
     {
+        clientThread.ProcessReplicationQueue(mComponentRegistry);
         mEcs.progress();
     }
 
@@ -137,7 +138,6 @@ int Application::RunAsMonolith(fc::Environment::Options& options, std::vector<Mo
 
 void Application::UpdateReplication(fc::Network::ServerThread& serverThread)
 {
-    // Queue replication packets for existing clients
     mEcs.each<ReplicatedComponent>([&](flecs::entity e, ReplicatedComponent& rep)
     {
         if (!rep.mIsDirty) return;
@@ -147,37 +147,30 @@ void Application::UpdateReplication(fc::Network::ServerThread& serverThread)
             rep.mDirtyComponents + rep.mDirtyComponentCount
         );
 
-        auto packet = Network::GenerateReplicationPacket(e, rep, dirtyComponents, mComponentRegistry);
-        serverThread.QueueReplicationPacket(packet);
+        auto request = Network::GenerateReplicationRequest(e, rep, false, dirtyComponents, mComponentRegistry);
+        serverThread.QueueReplicationRequest(request);
         rep.ClearDirty();
     });
 
-    // Queue full snapshot replication for newly connected clients
-    std::vector<ENetPeer*> newClients;
-    Network::Event event;
-    while (serverThread.PollEvent(event))
+    std::vector<ENetPeer*> newPeers = serverThread.PopNewPeers();
+    if (!newPeers.empty())
     {
-        if (event.mType == Network::Event::Type::PeerConnect)
+        mEcs.each<ReplicatedComponent>([&](flecs::entity e, ReplicatedComponent& rep)
         {
-            newClients.push_back(event.mPeer);
-        }
+            const std::unordered_set<flecs::id_t>& ids = mComponentRegistry->GetReplicatedComponents();
+
+            std::vector<flecs::id_t> components(ids.begin(), ids.end());
+
+            auto request = Network::GenerateReplicationRequest(e, rep, true, components, mComponentRegistry);
+            
+            for (ENetPeer* peer : newPeers)
+            {
+                Network::ReplicationRequest clientRequest = request;
+                clientRequest.mRecipient = peer;
+                serverThread.QueueReplicationRequest(clientRequest);
+            }
+        });
     }
-
-    mEcs.each<ReplicatedComponent>([&](flecs::entity e, ReplicatedComponent& rep)
-    {
-        const std::unordered_set<flecs::id_t>& ids = mComponentRegistry->GetReplicatedComponents();
-
-        std::vector<flecs::id_t> components(ids.begin(), ids.end());
-
-        auto packet = Network::GenerateReplicationPacket(e, rep, components, mComponentRegistry);
-
-        for (ENetPeer* peer : newClients)
-        {
-            Network::ReplicationPacket clientPacket = packet;
-            clientPacket.mRecipient = peer;
-            serverThread.QueueReplicationPacket(clientPacket);
-        }
-    });
 }
 
-}  // namespace fc
+} // namespace fc

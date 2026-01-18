@@ -12,22 +12,22 @@
 namespace fc::Network
 {
 
-struct ReplicationPacket
+/// @brief Represents a replication request for a single entity.
+struct ReplicationRequest
 {
-    // Serialized fields
-    uint64_t mEntityId;
-    bool mIsNewEntity;
-    bool mIsDestroyed;
-
-    ENetPeer* mRecipient = nullptr;
-
     struct ComponentData
     {
         uint32_t mTypeHash;
         std::vector<uint8_t> mData;
     };
 
+    // Serialized fields
+    uint64_t mEntityId;
+    bool mIsNewEntity;
+    bool mIsDestroyed;
     std::vector<ComponentData> mComponents;
+
+    ENetPeer* mRecipient = nullptr;
 
     std::vector<uint8_t> Serialize()
     {
@@ -62,9 +62,9 @@ struct ReplicationPacket
         return buffer;
     }
 
-    static ReplicationPacket Deserialize(const std::vector<uint8_t>& buffer)
+    static ReplicationRequest Deserialize(const std::vector<uint8_t>& buffer)
     {
-        ReplicationPacket packet;
+        ReplicationRequest request;
         size_t offset = 0;
 
         auto Read = [&buffer, &offset](void* dest, size_t size) {
@@ -72,20 +72,20 @@ struct ReplicationPacket
             offset += size;
         };
 
-        Read(&packet.mEntityId, sizeof(packet.mEntityId));
+        Read(&request.mEntityId, sizeof(request.mEntityId));
 
         uint8_t isNew, isDestroyed;
         Read(&isNew, 1);
         Read(&isDestroyed, 1);
-        packet.mIsNewEntity = (isNew != 0);
-        packet.mIsDestroyed = (isDestroyed != 0);
+        request.mIsNewEntity = (isNew != 0);
+        request.mIsDestroyed = (isDestroyed != 0);
 
         uint16_t componentCount;
         Read(&componentCount, sizeof(componentCount));
 
         for (uint16_t i = 0; i < componentCount; ++i)
         {
-            ReplicationPacket::ComponentData comp;
+            ReplicationRequest::ComponentData comp;
 
             Read(&comp.mTypeHash, sizeof(comp.mTypeHash));
 
@@ -96,34 +96,34 @@ struct ReplicationPacket
             memcpy(comp.mData.data(), buffer.data() + offset, dataSize);
             offset += dataSize;
 
-            packet.mComponents.push_back(std::move(comp));
+            request.mComponents.push_back(std::move(comp));
         }
 
-        return packet;
+        return request;
     }
 };
 
-inline ReplicationPacket GenerateReplicationPacket(flecs::entity e, const ReplicatedComponent& rep, const std::vector<flecs::id_t>& componentIds, const fc::ECS::ComponentRegistry* registry)
+inline ReplicationRequest GenerateReplicationRequest(flecs::entity e, const ReplicatedComponent& rep, const bool forceNew, const std::vector<flecs::id_t>& componentIds, const fc::ECS::ComponentRegistry* registry)
 {
-    Network::ReplicationPacket packet;
-    packet.mEntityId = e.id();
-    packet.mIsNewEntity = rep.mIsNewEntity;
+    Network::ReplicationRequest request;
+    request.mEntityId = e.id();
+    request.mIsNewEntity = forceNew ? true : rep.mIsNewEntity;
 
     for (flecs::id_t componentId : componentIds)
     {
-        auto schema = registry->GetSchema(componentId);
+        auto desc = registry->GetDescriptor(componentId);
         const void* componentData = e.get(componentId);
         if (componentData)
         {
-            Network::ReplicationPacket::ComponentData compData;
-            compData.mTypeHash = schema.mTypeHash;
+            Network::ReplicationRequest::ComponentData compData;
+            compData.mTypeHash = desc.mTypeHash;
             const uint8_t* dataPtr = static_cast<const uint8_t*>(componentData);
-            compData.mData.assign(dataPtr, dataPtr + schema.mSize);
-            packet.mComponents.push_back(std::move(compData));
+            compData.mData.assign(dataPtr, dataPtr + desc.mSize);
+            request.mComponents.push_back(std::move(compData));
         }
     }
 
-    return packet;
+    return request;
 }
 
-}  // namespace fc::Network
+} // namespace fc::Network
