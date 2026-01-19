@@ -15,11 +15,8 @@ struct ReplicatedComponent
     void MarkDirty(flecs::id_t componentId)
     {
         mIsDirty = true;
-        for (size_t i = 0; i < mDirtyComponentCount; ++i)
-        {
-            if (mDirtyComponents[i] == componentId)
-                return;
-        }
+
+        if (IsComponentDirty(componentId)) return;
 
         if (mDirtyComponentCount < MAX_DIRTY_COMPONENTS)
         {
