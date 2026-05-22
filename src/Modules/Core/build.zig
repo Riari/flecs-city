@@ -13,7 +13,6 @@ pub fn build(b: *std.Build) void
     const vcpkg_root = b.option([]const u8, "vcpkg_root", "") orelse "vcpkg_installed";
     const vcpkg_triplet = b.option([]const u8, "vcpkg_triplet", "") orelse "x64-mingw-dynamic";
     const vcpkg_inc = b.fmt("{s}/{s}/include", .{ vcpkg_root, vcpkg_triplet });
-    const vcpkg_lib = b.fmt("{s}/{s}/lib", .{ vcpkg_root, vcpkg_triplet });
 
     mod.addCSourceFiles(.{
         .files = &.{
@@ -23,30 +22,15 @@ pub fn build(b: *std.Build) void
         .flags = &.{"-std=c++17"},
     });
 
-    if (target.result.os.tag == .windows)
-    {
-        mod.linkSystemLibrary("winmm", .{});
-        mod.linkSystemLibrary("ws2_32", .{});
-        mod.addCMacro("WIN32_LEAN_AND_MEAN", "1");
-        mod.addCMacro("NOGDI", "1");
-        mod.addCMacro("NOUSER", "1");
-    }
-
     mod.addIncludePath(.{ .cwd_relative = "src/Public" });
     mod.addIncludePath(b.path(".."));
     mod.addIncludePath(.{ .cwd_relative = vcpkg_inc });
-    mod.addLibraryPath(.{ .cwd_relative = vcpkg_lib });
 
     mod.addCMacro("EXPORTS", "");
+    mod.addCMacro("SPDLOG_HEADER_ONLY", "1");
     mod.addCMacro("FMT_HEADER_ONLY", "1");
 
     mod.linkSystemLibrary("c++", .{});
-    mod.linkSystemLibrary("spdlog.dll", .{});
-    mod.linkSystemLibrary("fmt.dll", .{});
-    mod.linkSystemLibrary("flecs.dll", .{});
-    mod.linkSystemLibrary("glfw3dll", .{});
-    mod.linkSystemLibrary("raylib.dll", .{});
-    mod.linkSystemLibrary("enet", .{});
 
     const lib = b.addLibrary(.{ .name = "Core", .root_module = mod, .linkage = .dynamic });
 
