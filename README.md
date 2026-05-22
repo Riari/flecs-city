@@ -10,15 +10,15 @@ This is a C++ sandbox project for exploring Flecs v4 and raylib (as well as othe
 ## Setup
 
 1. Bootstrap vcpkg with `./vcpkg/bootstrap-vcpkg.sh` (`./vcpkg/bootstrap-vcpkg.bat` on Windows).
-2. Run `./vcpkg/vcpkg install --triplet=x64-mingw-dynamic` to install dependencies.
+2. Install dependencies with `./vcpkg/vcpkg install` (`./vcpkg/vcpkg.exe install --triplet=x64-mingw-dynamic` on Windows).
 
 ## Building
 
-Run `zig build`.
+Run `zig build -Dvcpkg_triplet=x64-linux-dynamic` (`zig build` on Windows).
 
 ## Running
 
-Run `./zig-out/bin/flecs_city.exe`. Supported args:
+Run `./zig-out/bin/flecs_city`. Supported args:
 
 * -m[mode], --mode=[mode]: Mode to run in (monolith|server|client). Defaults to monolith.
 * -l[listen], --listen=[listen]: Port to listen on (if mode is Server). Defaults to 6420.
