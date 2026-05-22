@@ -4,9 +4,10 @@
     "enet",
     {
       "name": "flecs",
-      "version>=": "4.1.1"
+      "version>=": "4.1.5"
     },
     "glfw3",
+    "gtest",
     "raylib",
     {
       "name": "spdlog",

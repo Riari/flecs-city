@@ -1,9 +1,8 @@
 #include <vector>
 
-#include <Modules/Core/Core.h>
-
 #include "Application/Application.h"
 #include "Environment/Options.h"
+#include "Modules/Core/Core.h"
 
 int main(int argc, char** argv)
 {

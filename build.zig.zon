@@ -1,0 +1,14 @@
+.{
+    .name = .zig_cpp,
+    .version = "0.0.0",
+    .fingerprint = 0x7758c7934b8119b6,
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{
+        .Core = .{ .path = "src/Modules/Core" },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}

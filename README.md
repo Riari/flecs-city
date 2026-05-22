@@ -4,14 +4,22 @@ This is a C++ sandbox project for exploring Flecs v4 and raylib (as well as othe
 
 ## Requirements
 
-* [CMake](https://github.com/Kitware/CMake) 3.20 or newer
-* [Ninja](https://github.com/ninja-build/ninja)
+* [Zig](https://ziglang.org/)
 * [vcpkg](https://github.com/microsoft/vcpkg) (included as a submodule)
+
+## Setup
+
+1. Bootstrap vcpkg with `./vcpkg/bootstrap-vcpkg.sh` (`./vcpkg/bootstrap-vcpkg.bat` on Windows).
+2. Run `./vcpkg/vcpkg install --triplet=x64-mingw-dynamic` to install dependencies.
 
 ## Building
 
-Run `./vcpkg/bootstrap-vcpkg.sh` (`./vcpkg/bootstrap-vcpkg.bat` on Windows) to bootstrap it.
+Run `zig build`.
 
-Run `cmake --preset=vcpkg` to generate the build configuration.
+## Running
 
-Run `cmake --build build` to build.
+Run `./zig-out/bin/flecs_city.exe`. Supported args:
+
+* -m[mode], --mode=[mode]: Mode to run in (monolith|server|client). Defaults to monolith.
+* -l[listen], --listen=[listen]: Port to listen on (if mode is Server). Defaults to 6420.
+* -c[connect], --connect=[connect]: Address to connect to (if mode is Client). Defaults to 127.0.0.1:6420.

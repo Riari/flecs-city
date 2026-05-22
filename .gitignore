@@ -1,8 +1,7 @@
-# CMake
-_deps/**
-**/CMakeFiles/**
-
-# Build output
 .cache/**
-build/**
-compile_commands.json
+
+vcpkg_installed/**
+
+.zig-cache/**
+zig-out/**
+zig-pkg/**
