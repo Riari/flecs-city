@@ -6,7 +6,7 @@ pub fn build(b: *std.Build) void
     const optimize = b.standardOptimizeOption(.{});
 
     const vcpkg_root = b.option([]const u8, "vcpkg_root", "") orelse "vcpkg_installed";
-    const vcpkg_triplet = b.option([]const u8, "vcpkg_triplet", "") orelse "x64-mingw-dynamic";
+    const vcpkg_triplet = b.option([]const u8, "vcpkg_triplet", "") orelse "x64-linux-dynamic";
     const vcpkg_inc = b.fmt("{s}/{s}/include", .{ vcpkg_root, vcpkg_triplet });
     const vcpkg_lib = b.fmt("{s}/{s}/lib", .{ vcpkg_root, vcpkg_triplet });
     const vcpkg_bin = b.fmt("{s}/{s}/bin", .{ vcpkg_root, vcpkg_triplet });

@@ -6,6 +6,7 @@ This is a C++ sandbox project for exploring Flecs v4 and raylib (as well as othe
 
 * [Zig](https://ziglang.org/)
 * [vcpkg](https://github.com/microsoft/vcpkg) (included as a submodule)
+* Windows only: a compatible MinGW toolchain (I recommend `winget install MartinStorsjo.LLVM-MinGW.UCRT`)
 
 ## Setup
 
@@ -14,7 +15,7 @@ This is a C++ sandbox project for exploring Flecs v4 and raylib (as well as othe
 
 ## Building
 
-Run `zig build -Dvcpkg_triplet=x64-linux-dynamic` (`zig build` on Windows).
+Run `zig build` (`zig build -Dvcpkg_triplet=x64-mingw-dynamic` on Windows).
 
 ## Running
 
