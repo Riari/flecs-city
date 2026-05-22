@@ -23,8 +23,8 @@ struct ReplicationRequest
 
     // Serialized fields
     uint64_t mEntityId;
-    bool mIsNewEntity;
-    bool mIsDestroyed;
+    bool mIsNewEntity{false};
+    bool mIsDestroyed{false};
     std::vector<ComponentData> mComponents;
 
     ENetPeer* mRecipient = nullptr;
