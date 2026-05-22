@@ -5,11 +5,11 @@ pub fn build(b: *std.Build) void
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const vcpkg_default_triplet = if (target.result.os.tag == .windows) "x64-mingw-dynamic" else "x64-linux-dynamic";
     const vcpkg_root = b.option([]const u8, "vcpkg_root", "") orelse "vcpkg_installed";
-    const vcpkg_triplet = b.option([]const u8, "vcpkg_triplet", "") orelse "x64-linux-dynamic";
+    const vcpkg_triplet = b.option([]const u8, "vcpkg_triplet", "") orelse vcpkg_default_triplet;
     const vcpkg_inc = b.fmt("{s}/{s}/include", .{ vcpkg_root, vcpkg_triplet });
     const vcpkg_lib = b.fmt("{s}/{s}/lib", .{ vcpkg_root, vcpkg_triplet });
-    const vcpkg_bin = b.fmt("{s}/{s}/bin", .{ vcpkg_root, vcpkg_triplet });
 
     const core_dep = b.dependency("Core", .{
         .target = target,
@@ -36,23 +36,6 @@ pub fn build(b: *std.Build) void
         .flags = &.{"-std=c++17"},
     });
 
-    if (target.result.os.tag == .windows)
-    {
-        mod.linkSystemLibrary("winmm", .{});
-        mod.linkSystemLibrary("ws2_32", .{});
-        mod.addCMacro("WIN32_LEAN_AND_MEAN", "1");
-        mod.addCMacro("NOGDI", "1");
-        mod.addCMacro("NOUSER", "1");
-
-        const vcpkg_binaries = b.addInstallDirectory(.{
-            .source_dir = b.path(vcpkg_bin),
-            .install_dir = .bin,
-            .install_subdir = "",
-        });
-
-        b.getInstallStep().dependOn(&vcpkg_binaries.step);
-    }
-
     mod.addCMacro("SPDLOG_HEADER_ONLY", "1");
     mod.addCMacro("FMT_HEADER_ONLY", "1");
 
@@ -64,10 +47,35 @@ pub fn build(b: *std.Build) void
     mod.addLibraryPath(b.path(vcpkg_lib));
 
     mod.linkSystemLibrary("c++", .{});
-    mod.linkSystemLibrary("flecs", .{});
-    mod.linkSystemLibrary("glfw", .{});
-    mod.linkSystemLibrary("raylib", .{});
     mod.linkSystemLibrary("enet", .{});
+
+    if (target.result.os.tag == .windows)
+    {
+        mod.linkSystemLibrary("winmm", .{});
+        mod.linkSystemLibrary("ws2_32", .{});
+        mod.addCMacro("WIN32_LEAN_AND_MEAN", "1");
+        mod.addCMacro("NOGDI", "1");
+        mod.addCMacro("NOUSER", "1");
+
+        mod.linkSystemLibrary("flecs.dll", .{});
+        mod.linkSystemLibrary("glfw3dll", .{});
+        mod.linkSystemLibrary("raylib.dll", .{});
+
+        const vcpkg_bin = b.fmt("{s}/{s}/bin", .{ vcpkg_root, vcpkg_triplet });
+        const vcpkg_binaries = b.addInstallDirectory(.{
+            .source_dir = b.path(vcpkg_bin),
+            .install_dir = .bin,
+            .install_subdir = "",
+        });
+
+        b.getInstallStep().dependOn(&vcpkg_binaries.step);
+    }
+    else
+    {
+        mod.linkSystemLibrary("flecs", .{});
+        mod.linkSystemLibrary("glfw", .{});
+        mod.linkSystemLibrary("raylib", .{});
+    }
 
     mod.linkLibrary(core_lib);
 
