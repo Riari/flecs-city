@@ -53,12 +53,12 @@ pub fn build(b: *std.Build) void
     mod.addLibraryPath(b.path(vcpkg_lib));
 
     mod.linkSystemLibrary("c++", .{});
-    mod.addObjectFile(b.path(b.fmt("{s}/libspdlog.dll.a", .{vcpkg_lib})));
-    mod.addObjectFile(b.path(b.fmt("{s}/libfmt.dll.a", .{vcpkg_lib})));
-    mod.addObjectFile(b.path(b.fmt("{s}/libflecs.dll.a", .{vcpkg_lib})));
-    mod.addObjectFile(b.path(b.fmt("{s}/libglfw3dll.a", .{vcpkg_lib})));
-    mod.addObjectFile(b.path(b.fmt("{s}/libraylib.dll.a", .{vcpkg_lib})));
-    mod.addObjectFile(b.path(b.fmt("{s}/libenet.a", .{vcpkg_lib})));
+    mod.linkSystemLibrary("spdlog.dll", .{});
+    mod.linkSystemLibrary("fmt.dll", .{});
+    mod.linkSystemLibrary("flecs.dll", .{});
+    mod.linkSystemLibrary("glfw3dll", .{});
+    mod.linkSystemLibrary("raylib.dll", .{});
+    mod.linkSystemLibrary("enet", .{});
 
     mod.linkLibrary(core_lib);
 

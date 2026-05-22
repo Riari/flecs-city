@@ -41,12 +41,12 @@ pub fn build(b: *std.Build) void
     mod.addCMacro("FMT_HEADER_ONLY", "1");
 
     mod.linkSystemLibrary("c++", .{});
-    mod.addObjectFile(.{ .cwd_relative = b.fmt("{s}/libspdlog.dll.a", .{vcpkg_lib}) });
-    mod.addObjectFile(.{ .cwd_relative = b.fmt("{s}/libfmt.dll.a", .{vcpkg_lib}) });
-    mod.addObjectFile(.{ .cwd_relative = b.fmt("{s}/libflecs.dll.a", .{vcpkg_lib}) });
-    mod.addObjectFile(.{ .cwd_relative = b.fmt("{s}/libglfw3dll.a", .{vcpkg_lib}) });
-    mod.addObjectFile(.{ .cwd_relative = b.fmt("{s}/libraylib.dll.a", .{vcpkg_lib}) });
-    mod.addObjectFile(.{ .cwd_relative = b.fmt("{s}/libenet.a", .{vcpkg_lib}) });
+    mod.linkSystemLibrary("spdlog.dll", .{});
+    mod.linkSystemLibrary("fmt.dll", .{});
+    mod.linkSystemLibrary("flecs.dll", .{});
+    mod.linkSystemLibrary("glfw3dll", .{});
+    mod.linkSystemLibrary("raylib.dll", .{});
+    mod.linkSystemLibrary("enet", .{});
 
     const lib = b.addLibrary(.{ .name = "Core", .root_module = mod, .linkage = .dynamic });
 
