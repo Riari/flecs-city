@@ -1,23 +1,16 @@
 const std = @import("std");
+const Vcpkg = @import("build/vcpkg.zig").Vcpkg;
+const utils = @import("build/utils.zig");
+const core = @import("src/Modules/Core/build.zig");
 
 pub fn build(b: *std.Build) void
 {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const vcpkg_default_triplet = if (target.result.os.tag == .windows) "x64-mingw-dynamic" else "x64-linux-dynamic";
-    const vcpkg_root = b.option([]const u8, "vcpkg_root", "") orelse "vcpkg_installed";
-    const vcpkg_triplet = b.option([]const u8, "vcpkg_triplet", "") orelse vcpkg_default_triplet;
-    const vcpkg_inc = b.fmt("{s}/{s}/include", .{ vcpkg_root, vcpkg_triplet });
-    const vcpkg_lib = b.fmt("{s}/{s}/lib", .{ vcpkg_root, vcpkg_triplet });
+    const vcpkg = Vcpkg.init(b, target);
 
-    const core_dep = b.dependency("Core", .{
-        .target = target,
-        .optimize = optimize,
-        .vcpkg_root = vcpkg_root,
-        .vcpkg_triplet = vcpkg_triplet,
-    });
-    const core_lib = core_dep.artifact("Core");
+    const lib_core = core.build(b, target, optimize, vcpkg);
 
     const mod = b.createModule(.{
         .target = target,
@@ -41,29 +34,21 @@ pub fn build(b: *std.Build) void
 
     mod.addIncludePath(b.path("src/Public"));
     mod.addIncludePath(b.path("src/Private"));
-    mod.addIncludePath(b.path(vcpkg_inc));
-    mod.addIncludePath(core_dep.path("."));
-
-    mod.addLibraryPath(b.path(vcpkg_lib));
+    mod.addIncludePath(b.path("src/Modules"));
+    mod.addIncludePath(vcpkg.inc_path);
+    mod.addLibraryPath(vcpkg.lib_path);
 
     mod.linkSystemLibrary("c++", .{});
     mod.linkSystemLibrary("enet", .{});
 
     if (target.result.os.tag == .windows)
     {
-        mod.linkSystemLibrary("winmm", .{});
-        mod.linkSystemLibrary("ws2_32", .{});
-        mod.addCMacro("WIN32_LEAN_AND_MEAN", "1");
-        mod.addCMacro("NOGDI", "1");
-        mod.addCMacro("NOUSER", "1");
-
+        utils.Windows.linkRaylib(mod);
         mod.linkSystemLibrary("flecs.dll", .{});
         mod.linkSystemLibrary("glfw3dll", .{});
-        mod.linkSystemLibrary("raylib.dll", .{});
 
-        const vcpkg_bin = b.fmt("{s}/{s}/bin", .{ vcpkg_root, vcpkg_triplet });
         const vcpkg_binaries = b.addInstallDirectory(.{
-            .source_dir = b.path(vcpkg_bin),
+            .source_dir = vcpkg.bin_path,
             .install_dir = .bin,
             .install_subdir = "",
         });
@@ -77,7 +62,7 @@ pub fn build(b: *std.Build) void
         mod.linkSystemLibrary("raylib", .{});
     }
 
-    mod.linkLibrary(core_lib);
+    mod.linkLibrary(lib_core);
 
     const exe = b.addExecutable(.{
         .name = "flecs_city",
@@ -85,7 +70,7 @@ pub fn build(b: *std.Build) void
     });
 
     b.installArtifact(exe);
-    b.installArtifact(core_lib);
+    b.installArtifact(lib_core);
 
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());

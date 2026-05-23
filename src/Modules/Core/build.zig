@@ -1,32 +1,26 @@
 const std = @import("std");
+const Vcpkg = @import("../../../build/vcpkg.zig").Vcpkg;
+const build_utils = @import("../../../build/utils.zig");
 
-pub fn build(b: *std.Build) void
+pub fn build(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, vcpkg: Vcpkg) *std.Build.Step.Compile
 {
-    const target = b.standardTargetOptions(.{});
-    const optimize = b.standardOptimizeOption(.{});
-
     const mod = b.createModule(.{
         .target = target,
         .optimize = optimize,
     });
 
-    const vcpkg_root = b.option([]const u8, "vcpkg_root", "") orelse "vcpkg_installed";
-    const vcpkg_triplet = b.option([]const u8, "vcpkg_triplet", "") orelse "x64-linux-dynamic";
-    const vcpkg_inc = b.fmt("{s}/{s}/include", .{ vcpkg_root, vcpkg_triplet });
-    const vcpkg_lib = b.fmt("{s}/{s}/lib", .{ vcpkg_root, vcpkg_triplet });
-
     mod.addCSourceFiles(.{
         .files = &.{
-            "Core.cpp",
-            "ECS/Phases.cpp",
+            "src/Modules/Core/Core.cpp",
+            "src/Modules/Core/ECS/Phases.cpp",
         },
         .flags = &.{"-std=c++17"},
     });
 
-    mod.addIncludePath(.{ .cwd_relative = "src/Public" });
-    mod.addIncludePath(b.path(".."));
-    mod.addIncludePath(.{ .cwd_relative = vcpkg_inc });
-    mod.addLibraryPath(.{ .cwd_relative = vcpkg_lib });
+    mod.addIncludePath(b.path("src/Public"));
+    mod.addIncludePath(b.path("src/Modules"));
+    mod.addIncludePath(vcpkg.inc_path);
+    mod.addLibraryPath(vcpkg.lib_path);
 
     mod.addCMacro("EXPORTS", "");
     mod.addCMacro("SPDLOG_HEADER_ONLY", "1");
@@ -36,14 +30,8 @@ pub fn build(b: *std.Build) void
 
     if (target.result.os.tag == .windows)
     {
-        mod.linkSystemLibrary("winmm", .{});
-        mod.linkSystemLibrary("ws2_32", .{});
-        mod.addCMacro("WIN32_LEAN_AND_MEAN", "1");
-        mod.addCMacro("NOGDI", "1");
-        mod.addCMacro("NOUSER", "1");
-
+        build_utils.Windows.linkRaylib(mod);
         mod.linkSystemLibrary("flecs.dll", .{});
-        mod.linkSystemLibrary("raylib.dll", .{});
     }
     else
     {
@@ -51,7 +39,5 @@ pub fn build(b: *std.Build) void
         mod.linkSystemLibrary("raylib", .{});
     }
 
-    const lib = b.addLibrary(.{ .name = "Core", .root_module = mod, .linkage = .dynamic });
-
-    b.installArtifact(lib);
+    return b.addLibrary(.{ .name = "Core", .root_module = mod, .linkage = .dynamic });
 }
