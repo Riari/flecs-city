@@ -14,4 +14,4 @@ pub const Windows = struct
 
         mod.linkSystemLibrary("raylib.dll", .{});
     }
-}
+};

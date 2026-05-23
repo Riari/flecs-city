@@ -15,11 +15,11 @@ This is a C++ sandbox project for exploring Flecs v4 and raylib (as well as othe
 
 ## Building
 
-Run `zig build` (`zig build -Dvcpkg_triplet=x64-mingw-dynamic` on Windows).
+Run `zig build`.
 
 ## Running
 
-Run `./zig-out/bin/flecs_city`. Supported args:
+Run `zig build run`. Supported args (pass after `--`):
 
 * -m[mode], --mode=[mode]: Mode to run in (monolith|server|client). Defaults to monolith.
 * -l[listen], --listen=[listen]: Port to listen on (if mode is Server). Defaults to 6420.
