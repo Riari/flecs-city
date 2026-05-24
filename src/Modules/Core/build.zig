@@ -1,6 +1,6 @@
 const std = @import("std");
-const Vcpkg = @import("../../../build/vcpkg.zig").Vcpkg;
-const build_utils = @import("../../../build/utils.zig");
+const Vcpkg = @import("../../../zig/vcpkg.zig").Vcpkg;
+const build_utils = @import("../../../zig/utils.zig");
 
 pub fn build(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, vcpkg: Vcpkg) *std.Build.Step.Compile
 {

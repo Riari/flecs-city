@@ -1,6 +1,6 @@
 const std = @import("std");
-const Vcpkg = @import("build/vcpkg.zig").Vcpkg;
-const utils = @import("build/utils.zig");
+const Vcpkg = @import("zig/vcpkg.zig").Vcpkg;
+const utils = @import("zig/utils.zig");
 const core = @import("src/Modules/Core/build.zig");
 
 pub fn build(b: *std.Build) void
