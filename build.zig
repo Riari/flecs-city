@@ -55,9 +55,9 @@ pub fn build(b: *std.Build) void
     }
     else
     {
+        mod.linkSystemLibrary("raylib", .{});
         mod.linkSystemLibrary("flecs", .{});
         mod.linkSystemLibrary("glfw", .{});
-        mod.linkSystemLibrary("raylib", .{});
     }
 
     const core_lib = core.build(b, target, optimize, vcpkg);
