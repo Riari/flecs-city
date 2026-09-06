@@ -90,7 +90,7 @@ int Application::RunAsClient(fc::Environment::Options& options, std::vector<Modu
     SetTargetFPS(60);
 
     Environment::ConnectAddress connectAddress = options.GetConnectAddress();
-    if (!clientThread.Connect(connectAddress.mHost, connectAddress.mPort))
+    if (!clientThread.Connect(connectAddress.mHostString.c_str(), connectAddress.mPort))
         return -1;
 
     spdlog::info("Initialising ECS...");

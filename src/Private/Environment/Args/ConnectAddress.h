@@ -12,18 +12,16 @@ namespace fc::Environment
 
 struct ConnectAddress
 {
-    const char* mHost;
     uint32_t mPort;
 
     std::string mHostString;
 
-    ConnectAddress() : mHost(nullptr), mPort(0) {}
+    ConnectAddress() : mPort(0) {}
 
     ConnectAddress(const std::string& hostString, uint32_t port)
         : mHostString(hostString)
         , mPort(port)
     {
-        mHost = hostString.c_str();
     }
 };
 
