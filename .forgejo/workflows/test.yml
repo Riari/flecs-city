@@ -5,7 +5,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: install system dependencies
-              run: sudo apt -y install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
+              run: sudo apt update && sudo apt -y install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
             - name: checkout code
               uses: actions/checkout@v6
               with:
