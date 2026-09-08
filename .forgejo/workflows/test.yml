@@ -6,6 +6,8 @@ jobs:
         steps:
             - name: checkout
               uses: actions/checkout@v6
+              with:
+                submodules: true
             - name: vcpkg bootstrap
               run: ./vcpkg/bootstrap-vcpkg.sh
             - name: vcpkg install
