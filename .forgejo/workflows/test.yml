@@ -15,7 +15,7 @@ jobs:
             - name: vcpkg bootstrap
               run: ./vcpkg/bootstrap-vcpkg.sh
             - name: vcpkg install
-              run: ./vcpkg/vcpkg install
+              run: ./vcpkg/vcpkg install --triplet=x64-linux-dynamic
             - name: test
               run: zig build test
 
