@@ -1,6 +1,8 @@
 on: [push]
 
 jobs:
+    runs-on: ubuntu-latest
+
     test:
         steps:
             - name: checkout
