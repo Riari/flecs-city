@@ -7,6 +7,10 @@ jobs:
         steps:
             - name: checkout
               uses: actions/checkout@v6
+            - name: vcpkg bootstrap
+              run: ./vcpkg/bootstrap-vcpkg.sh
+            - name: vcpkg install
+              run: ./vcpkg/vcpkg install
             - name: test
               run: zig build test
 
