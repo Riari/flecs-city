@@ -1,0 +1,10 @@
+on: [push]
+
+jobs:
+    test:
+        steps:
+            - name: checkout
+              uses: actions/checkout@v6
+            - name: test
+              run: zig build test
+
