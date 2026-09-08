@@ -5,7 +5,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: install system dependencies
-              run: sudo apt install xinerama xcursor xorg libglu1-mesa pkg-config
+              run: sudo apt update && sudo apt install xinerama xcursor xorg libglu1-mesa pkg-config
             - name: checkout code
               uses: actions/checkout@v6
               with:
