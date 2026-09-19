@@ -3,7 +3,12 @@
     .version = "0.0.0",
     .fingerprint = 0x7758c7934b8119b6,
     .minimum_zig_version = "0.16.0",
-    .dependencies = .{},
+    .dependencies = .{
+        .compile_commands = .{
+            .url = "https://github.com/the-argus/zig-compile-commands/archive/0bfc64178d456fdcf6e1838f0efba705f580bd71.tar.gz",
+            .hash = "zig_compile_commands-1.0.2-OZg5-QHMAQCIPCoTbJwpqq4-jEFHLRXqlw3Z2gF9Pom6",
+        },
+    },
     .paths = .{
         "build.zig",
         "build.zig.zon",

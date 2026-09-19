@@ -1,10 +1,13 @@
 const std = @import("std");
+const zcc = @import("compile_commands");
 const Vcpkg = @import("zig/vcpkg.zig").Vcpkg;
 const utils = @import("zig/utils.zig");
 const core = @import("src/Modules/Core/build.zig");
 
-pub fn build(b: *std.Build) void
+pub fn build(b: *std.Build) !void
 {
+    var targets: std.ArrayList(*std.Build.Step.Compile) = .empty;
+
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -71,6 +74,9 @@ pub fn build(b: *std.Build) void
     b.installArtifact(exe);
     b.installArtifact(core_lib);
 
+    try targets.append(b.allocator, exe);
+    try targets.append(b.allocator, core_lib);
+
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
@@ -129,6 +135,8 @@ pub fn build(b: *std.Build) void
 
     b.installArtifact(test_exe);
 
+    try targets.append(b.allocator, test_exe);
+
     const test_cmd = b.addRunArtifact(test_exe);
     test_cmd.step.dependOn(b.getInstallStep());
 
@@ -140,4 +148,11 @@ pub fn build(b: *std.Build) void
         run_cmd.addArgs(args);
         test_cmd.addArgs(args);
     }
+
+    const cdb = zcc.createStep(b, .{
+        .name = "cdb",
+        .targets = targets.items,
+    });
+
+    b.getInstallStep().dependOn(cdb);
 }
