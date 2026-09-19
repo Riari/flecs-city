@@ -5,7 +5,7 @@
       "type": "lldb",
       "request": "launch",
       "name": "Launch monolith (Windows)",
-      "program": "${workspaceFolder}/build/bin/flecs-city.exe",
+      "program": "${workspaceFolder}/zig-out/bin/flecs_city.exe",
       "args": [
       ]
     },
@@ -13,7 +13,7 @@
       "type": "lldb",
       "request": "launch",
       "name": "Launch server (Windows)",
-      "program": "${workspaceFolder}/build/bin/flecs-city.exe",
+      "program": "${workspaceFolder}/zig-out/bin/flecs_city.exe",
       "args": [
         "--mode",
         "server"
@@ -23,38 +23,38 @@
       "type": "lldb",
       "request": "launch",
       "name": "Launch client (Windows)",
-      "program": "${workspaceFolder}/build/bin/flecs-city.exe",
+      "program": "${workspaceFolder}/zig-out/bin/flecs_city.exe",
       "args": [
         "--mode",
         "client"
       ]
     },
     {
-      "type": "cppdbg",
+      "type": "lldb",
       "request": "launch",
       "name": "Launch monolith (Linux)",
-      "cwd": "${workspaceFolder}/build/bin",
-      "program": "${workspaceFolder}/build/bin/flecs-city",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/zig-out/bin/flecs_city",
       "args": [
       ]
     },
     {
-      "type": "cppdbg",
+      "type": "lldb",
       "request": "launch",
       "name": "Launch server (Linux)",
-      "cwd": "${workspaceFolder}/build/bin",
-      "program": "${workspaceFolder}/build/bin/flecs-city",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/zig-out/bin/flecs_city",
       "args": [
         "--mode",
         "server"
       ]
     },
     {
-      "type": "cppdbg",
+      "type": "lldb",
       "request": "launch",
       "name": "Launch client (Linux)",
-      "cwd": "${workspaceFolder}/build/bin",
-      "program": "${workspaceFolder}/build/bin/flecs-city",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/zig-out/bin/flecs_city",
       "args": [
         "--mode",
         "client"

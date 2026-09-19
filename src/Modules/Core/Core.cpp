@@ -53,7 +53,6 @@ static void InitServerECS(flecs::world& ecs)
 
 static void InitClientECS(flecs::world& ecs)
 {
-    // Entity data
     Camera3D camera3D = {0};
     camera3D.position = {0.0f, 10.0f, 10.0f};
     camera3D.target = {0.0f, 0.0f, 0.0f};
@@ -61,7 +60,6 @@ static void InitClientECS(flecs::world& ecs)
     camera3D.fovy = 45.0f;
     camera3D.projection = CAMERA_PERSPECTIVE;
 
-    // Singletons and entities
     ecs.set<CameraComponent>({camera3D});
 
     flecs::entity cube = ecs.entity().set<PositionComponent>({0, 0, 0});
@@ -70,7 +68,6 @@ static void InitClientECS(flecs::world& ecs)
                              .set<PositionComponent>({300, 300, 0})
                              .set<TextComponent>("");
 
-    // Systems
     gPreDrawSystem = ecs.system<CameraComponent>()
                          .kind(fc::PreDraw)
                          .each([](CameraComponent& camera) {
