@@ -87,7 +87,10 @@ static void InitClientECS(flecs::world& ecs)
 
     ecs.system<const CameraComponent>("BeginDraw3D")
         .kind(fc::Draw3D)
-        .each([&camera3D](const CameraComponent& camera) { BeginMode3D(camera.mCamera); });
+        .each([&camera3D](const CameraComponent& camera) {
+            BeginMode3D(camera.mCamera);
+            DrawGrid(20, 10.0f);
+        });
 
     ecs.system<const PositionComponent>("DrawCubes")
         .kind(fc::Draw3D)

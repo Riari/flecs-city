@@ -33,6 +33,9 @@ int Application::Run(fc::Environment::Options& options, std::vector<Module>& mod
         module.RegisterComponents(mComponentRegistry);
     }
 
+    // For client and monolith modes
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+
     int status;
     if (options.IsServer() || options.IsClient())
     {
