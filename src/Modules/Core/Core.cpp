@@ -41,8 +41,8 @@ static void InitServerECS(flecs::world& ecs)
     replicatedEntity.set<TextComponent>("Hello world");
 
     static auto serverStartTime = std::chrono::steady_clock::now();
-    ecs.system<TextComponent>("UpdateText")
-        .each([](flecs::entity e, TextComponent& textComponent)
+    ecs.system<ReplicatedComponent, TextComponent>("UpdateText")
+        .each([](flecs::entity e, ReplicatedComponent&, TextComponent& textComponent)
         {
             auto now = std::chrono::steady_clock::now();
             int seconds = (int)std::chrono::duration_cast<std::chrono::seconds>(now - serverStartTime).count();
@@ -66,7 +66,7 @@ static void InitClientECS(flecs::world& ecs)
 
     flecs::entity text = ecs.entity()
                              .set<PositionComponent>({300, 300, 0})
-                             .set<TextComponent>("");
+                             .set<TextComponent>("This is a client-side text entity");
 
     gPreDrawSystem = ecs.system<CameraComponent>()
                          .kind(fc::PreDraw)

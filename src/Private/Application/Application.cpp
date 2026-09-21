@@ -165,7 +165,7 @@ void Application::UpdateReplication(fc::Network::ServerThread& serverThread)
             std::vector<flecs::id_t> components(ids.begin(), ids.end());
 
             auto request = Network::GenerateReplicationRequest(e, rep, true, components, mComponentRegistry);
-            
+
             for (ENetPeer* peer : newPeers)
             {
                 Network::ReplicationRequest clientRequest = request;
