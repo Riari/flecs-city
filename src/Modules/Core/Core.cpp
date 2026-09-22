@@ -9,6 +9,7 @@
 #include "ECS/ReplicatedComponent.h"
 
 #include "ECS/Components/CameraComponent.h"
+#include "ECS/Components/ModelComponent.h"
 #include "ECS/Components/PositionComponent.h"
 #include "ECS/Components/TextComponent.h"
 #include "ECS/Phases.h"
@@ -24,6 +25,7 @@ static void RegisterComponents(ECS::ComponentRegistry* registry)
     registry->RegisterComponent<ReplicatedComponent>();
 
     registry->RegisterComponent<CameraComponent>().add(flecs::Singleton);
+    registry->RegisterComponent<ModelComponent>();
 
     registry->RegisterReplicatedComponent<PositionComponent>("PositionComponent");
     registry->RegisterReplicatedComponent<TextComponent>("TextComponent");
@@ -62,11 +64,17 @@ static void InitClientECS(flecs::world& ecs)
 
     ecs.set<CameraComponent>({camera3D});
 
-    flecs::entity cube = ecs.entity().set<PositionComponent>({0, 0, 0});
+    flecs::entity buildingA = ecs.entity()
+                                 .set<PositionComponent>({1.0, 0, 1.0})
+                                 .set<ModelComponent>({LoadModel("assets/models/building_A.gltf")});
 
-    flecs::entity text = ecs.entity()
-                             .set<PositionComponent>({300, 300, 0})
-                             .set<TextComponent>("This is a client-side text entity");
+    flecs::entity buildingB = ecs.entity()
+                                 .set<PositionComponent>({3.0, 0, 1.0})
+                                 .set<ModelComponent>({LoadModel("assets/models/building_B.gltf")});
+
+    flecs::entity buildingC = ecs.entity()
+                                 .set<PositionComponent>({5.0, 0, 1.0})
+                                 .set<ModelComponent>({LoadModel("assets/models/building_C.gltf")});
 
     gPreDrawSystem = ecs.system<CameraComponent>()
                          .kind(fc::PreDraw)
@@ -89,12 +97,14 @@ static void InitClientECS(flecs::world& ecs)
         .kind(fc::Draw3D)
         .each([&camera3D](const CameraComponent& camera) {
             BeginMode3D(camera.mCamera);
-            DrawGrid(20, 10.0f);
+            DrawGrid(20, 2.0f);
         });
 
-    ecs.system<const PositionComponent>("DrawCubes")
+    ecs.system<const PositionComponent, const ModelComponent>("DrawModels")
         .kind(fc::Draw3D)
-        .each([](const PositionComponent& position) { DrawCube(position.mPosition, 5.0, 5.0, 5.0, RED); });
+        .each([](const PositionComponent& position, const ModelComponent& model) {
+            DrawModel(model.mModel, position.mPosition, model.mScale, model.mTint);
+        });
 
     ecs.system("EndDraw3D").kind(fc::Draw3D).each([]() { EndMode3D(); });
 
